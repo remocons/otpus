@@ -1,0 +1,39 @@
+{
+  "name": "otpus",
+  "version": "1.0.0",
+  "description": "pseudo otp generator otp",
+  "main": "src/otpus.js",
+  "cjs":"dist/otpus.cjs",
+  "esm":"dist/otpus.mjs",
+  "browser":"dist/otpus.esm.js",
+  "browseriife":"dist/otpus.min.js",
+  "type": "module",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/make-robot/otpus.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/make-robot/otpus/issues"
+  },
+  "homepage": "https://github.com/make-robot/otpus#readme",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-node-resolve": "^11.1.0",
+    "rollup": "^2.36.2",
+    "rollup-plugin-terser": "^7.0.2"
+  },
+  "dependencies": {
+    "meta-buffer-pack": "^0.1.0",
+    "base64-js": "^1.5.1"
+  }
+}

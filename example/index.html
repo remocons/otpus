@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .code {
+      height: 90vh;
+      width: 45vw;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      line-height: 1.5rem;
+    }
+    button{
+      padding: 15px;
+      font-size: 1.5em;
+    }
+  </style>
+  <title>OTPUS example</title>
+</head>
+
+<body>
+  
+  <div><button id="evalBtn">EVAL</button></div>
+  <textarea class='code' id="code" cols="30" rows="10" spellcheck="false">
+
+    let msg = 'this is top secret message';
+    let key = 'this is secret key';
+    let encoded  =   otpus.encryptMsg( msg, key );
+
+    prn('base64-encoded', encoded)
+
+    let decoded = otpus.decryptMsg( encoded , key )
+    prn('decoded', decoded)
+
+  </textarea>
+  <textarea class='code' id="result" cols="30" rows="10" spellcheck="false">
+  result:</textarea>
+
+</body>
+<script type="module">
+  // import  * as otpus from './lib/otpus.esm.js'
+  
+  // import { MBP } from './lib/meta-buffer-pack.esm.js'
+  // const NB = MBP.NB;
+  // const MB = MBP.MB;
+  // const MBA = MBP.MBA;
+  // let buffer = MBP.from([1,2,3])
+  // result.innerText = buffer
+  // console.log(buffer)
+
+  evalBtn.addEventListener('click', e => {
+    console.log(code.value)
+    result.innerHTML = ''
+    eval(code.value)
+  })
+
+  function prn(tag, v) {
+    result.innerHTML += "\n" + tag + ":\n" + v 
+    console.log(v)
+  }
+  function prnObj(tag, v) {
+    v = JSON.stringify(v , null, 2)
+    result.innerHTML += "\n" +tag + ":\n" + v 
+    console.log(v)
+  }
+</script>
+<script src="lib/otpus.min.js"></script>
+
+</html>
