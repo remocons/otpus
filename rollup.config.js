@@ -21,7 +21,7 @@ export default [
       }
     ],
     plugins: [
-      resolve(), 
+      resolve(),
       commonjs() 
       ,terser()
     ]

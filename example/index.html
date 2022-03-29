@@ -27,11 +27,11 @@
 
     let msg = 'this is top secret message';
     let key = 'this is secret key';
-    let encoded  =   otpus.encryptMsg( msg, key );
+    let encoded  =   otpus.encryptMsgPack( msg, key );
 
     prn('base64-encoded', encoded)
 
-    let decoded = otpus.decryptMsg( encoded , key )
+    let decoded = otpus.decryptMsgPack( encoded , key )
     prn('decoded', decoded)
 
   </textarea>
@@ -40,8 +40,9 @@
 
 </body>
 <script type="module">
-  // import  * as otpus from './lib/otpus.esm.js'
+  import  * as otpus from './lib/otpus.esm.js'
   
+
   // import { MBP } from './lib/meta-buffer-pack.esm.js'
   // const NB = MBP.NB;
   // const MB = MBP.MB;
@@ -51,7 +52,7 @@
   // console.log(buffer)
 
   evalBtn.addEventListener('click', e => {
-    console.log(code.value)
+    // console.log(code.value)
     result.innerHTML = ''
     eval(code.value)
   })

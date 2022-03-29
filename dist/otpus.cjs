@@ -320,15 +320,12 @@ function hmac (key, data) {
   return digest
 }
 
-// export * from '../lib/fast-sha256.js'
-
-// console.log('bayo-sha256', sha256)
-const encoder$1 = new TextEncoder();
+const encoder$2 = new TextEncoder();
 new TextDecoder();
 
 hash.arrayBuffer = function (data) {
   if (typeof data === 'string') {
-    data = encoder$1.encode(data);
+    data = encoder$2.encode(data);
   } else if (ArrayBuffer.isView(data)) {
     if (data.constructor.name === 'Uint8Array') ; else {
       throw new Error('Use Uint8Array')
@@ -348,9 +345,10 @@ hash.hex = function (data) {
 
 hash.hmac = function (key,data) {
   if (typeof data === 'string') {
-    data = encoder$1.encode(data);
+    data = encoder$2.encode(data);
   } else if (ArrayBuffer.isView(data)) {
-    if (data.constructor.name === 'Uint8Array') ; else {
+    // if (data.constructor.name === 'Uint8Array') {
+    if (data instanceof Uint8Array) ; else {
       throw new Error('Use Uint8Array')
     }
   } else if (data.constructor === ArrayBuffer) {
@@ -360,7 +358,7 @@ hash.hmac = function (key,data) {
   }
 
   if (typeof key === 'string') {
-    key = encoder$1.encode(key);
+    key = encoder$2.encode(key);
   } else if (ArrayBuffer.isView(key)) {
     if (key.constructor.name === 'Uint8Array') ; else {
       throw new Error('Use Uint8Array')
@@ -634,7 +632,7 @@ var ieee754 = {
  * @license  MIT
  */
 
-createCommonjsModule(function (module, exports) {
+var buffer = createCommonjsModule(function (module, exports) {
 
 
 
@@ -2734,13 +2732,386 @@ function BufferBigIntNotDefined () {
 }
 });
 
-new TextEncoder();
-new TextDecoder();
+const encoder$1 = new TextEncoder();
+const decoder$1 = new TextDecoder();
+
+/*  
+@params:
+-type: It's string keyword that indicate datatype.
+  8, 16, 32     default:  read and write as Uint. BigEndian.
+  i8, i16,      includes 'I' then read and write as Int.
+  16L , i16l    includes 'L  then read and write as LittleEndian.
+-value:  number to store the buffer
+return: Buffer
+*/
+
+const NB = numberBuffer;
+function numberBuffer(type, initValue = 0) {
+    let buffer$1;
+    if (type === undefined || typeof type !== 'string' || typeof initValue !== 'number') {
+        throw TypeError('invlaid init variablie type name. ')
+    }
+    type = type.toUpperCase();
+
+    if (type.includes('8')) {
+        buffer$1 = buffer.Buffer.alloc(1);
+        if (type.includes('I')) buffer$1.writeInt8(initValue);
+        else buffer$1.writeUint8(initValue);
+
+    } else if (type.includes('16')) {
+        buffer$1 = buffer.Buffer.alloc(2);
+        if (type.includes('I')) {
+            if (type.includes('L')) buffer$1.writeInt16LE(initValue);
+            else buffer$1.writeInt16BE(initValue);
+        } else {
+            if (type.includes('L')) buffer$1.writeUint16LE(initValue);
+            else buffer$1.writeUint16BE(initValue);
+        }
+
+    } else if (type.includes('32')) {
+        buffer$1 = buffer.Buffer.alloc(4);
+        if (type.includes('I')) {
+            if (type.includes('L')) buffer$1.writeInt32LE(initValue);
+            else buffer$1.writeInt32BE(initValue);
+        } else {
+            if (type.includes('L')) buffer$1.writeUint32LE(initValue);
+            else buffer$1.writeUint32BE(initValue);
+        }
+    } else if (type.includes('N')) {  // number as string
+        buffer$1 = buffer.Buffer.from(String(initValue));
+    } else {
+        console.log(`invalid type: ${type} or initvalue: ${initValue}`);
+    }
+    return buffer$1
+
+}
+
+
+
+/*
+@name:  name of the buffer.  
+  packer and unpacker use the name.
+@type:
+  8, 16, 32     default:  read and write as Uint. BigEndian.
+  i8, i16,      includes 'I' then read and write as Int.
+  16L , i16l    includes 'L  then read and write as LittleEndian.
+@data:
+  number : new buffer will be initilized with the value.
+  buffer without type : use the buffer
+  number without type : new buffer alloc with the size
+
+  return  ['name', data:Buffer , 'type']
+*/
+
+/* 
+ get buffer Object with initial value & meta info( name, data type, endian , length )
+ 
+input:   name, type, initValue 
+return:  return ['name',buffer, type ]  
+
+ex. new buffer 4bytes with name.
+  MB('bufname', 4)
+
+ex. 
+  MB('strBuffer', 'buffer store this text' )
+
+ex.
+  MB('uid', '16', 0x12EF )   => name: uid, type: uint16array, bigendian, init value 0x1234.   
+  return ['uid', <Buffer 12 EF > , '16' ] 
+
+ex.
+  let buf = Buffer.alloc(8)
+  MB('bufname', buf )  => name: 'bufname'   8byte buffer. 
+  return ['bufname', <Buffer 00 00 00 00 00 00 00 00 > ,'b' ] 
+
+*/
+
+const MB$1 = metaBuffer;
+function metaBuffer(name, typeOrData, initValue) {
+    let buffer$1;
+    let bufferType = 'B';
+    if (typeof typeOrData === 'number') {  // this number is buffer size. not value.
+        buffer$1 = buffer.Buffer.alloc(typeOrData);
+        if (initValue) buffer$1.fill(initValue);
+        bufferType = 'B';
+    } else if (typeof typeOrData === 'string' && typeof initValue === 'number') { // number with type.
+        bufferType = typeOrData.toUpperCase();  //use explicit type name
+        buffer$1 = numberBuffer(typeOrData, initValue); // notice.  two categories.  n: number string.  8, 16, 32: typed number.  
+    } else if (typeof typeOrData === 'string' && initValue === undefined) { //  string
+        buffer$1 = encoder$1.encode(typeOrData);
+        bufferType = 'S';
+    } else if (typeOrData instanceof Uint8Array && initValue === undefined) {  // buffer 
+        buffer$1 = typeOrData;
+    } else if (typeOrData instanceof ArrayBuffer && initValue === undefined) {
+        buffer$1 = new Uint8Array(typeOrData);
+    } else if (ArrayBuffer.isView(typeOrData)) {
+        buffer$1 = new Uint8Array(typeOrData.buffer, typeOrData.byteOffset, typeOrData.byteLength);
+    } else if (typeof typeOrData === 'object' && initValue === undefined) {  //   object. like array. stringify
+        buffer$1 = encoder$1.encode(JSON.stringify(typeOrData));
+        bufferType = 'O';
+    } else if (typeof typeOrData === 'boolean' && initValue === undefined) {  //   object. like array. stringify
+        let v = typeOrData ? 1 : 0;
+        buffer$1 = buffer.Buffer.from([v]);
+        bufferType = '!';
+    } else {
+        prn('invalid metabuffer data err', name, typeOrData, initValue);
+    }
+
+    if (typeof name === 'string' && name.includes('#')) name = '';  // 
+
+    return [name, bufferType, buffer$1]
+
+}
+
+
+const MBA = metaBufferArguments;
+function metaBufferArguments(...args) {
+    let i = 0;
+    let mba = args.map(
+        data => {
+            let argsIndex = i++;  // index number becom metabuffer's name.
+            if (typeof data === 'number') {
+                // * JS's primitive Number stored as string. 
+                return MB$1(argsIndex, 'N', data)
+            } else {
+                // typedarray, dataview, array, object, boolean
+                return MB$1(argsIndex, data)
+            }
+        });
+
+    // add parameter length. 
+    mba.push(MB$1('$', '8', mba.length));
+    return mba
+}
+
+
+
+function readTypedBuffer(type, buffer, offset, length) {
+    // prn('RTB type',type)
+    if (type.includes('8')) {
+        if (type.includes('I')) {
+            return buffer.readInt8(offset)
+        } else {
+            return buffer.readUint8(offset)
+        }
+    } else if (type.includes('16')) {
+        if (type.includes('I')) {
+            if (type.includes('L')) {
+                return buffer.readInt16LE(offset)
+            } else {
+                return buffer.readInt16BE(offset)
+            }
+        } else {
+            if (type.includes('L')) {
+                return buffer.readUint16LE(offset)
+            } else {
+                return buffer.readUint16BE(offset)
+            }
+        }
+
+    } else if (type.includes('32')) {
+        if (type.includes('I')) {
+            if (type.includes('L')) {
+                return buffer.readInt32LE(offset)
+            } else {
+                return buffer.readInt32BE(offset)
+            }
+        } else {
+            if (type.includes('L')) {
+                return buffer.readUint32LE(offset)
+            } else {
+                return buffer.readUint32BE(offset)
+            }
+        }
+
+    } else if (type === 'B') { //buffer
+        return buffer.slice(offset, offset + length)
+    } else if (type === 'S') { //string or arguments
+        let strBuffer = buffer.slice(offset, offset + length);
+        return decoder$1.decode(strBuffer)
+    } else if (type === 'N') { // number encoded as string
+        let strNumber = buffer.slice(offset, offset + length);
+        return Number(decoder$1.decode(strNumber))
+    } else if (type === 'O') { // object encoded string
+        let objEncoded = buffer.slice(offset, offset + length);
+        try {
+            return JSON.parse(decoder$1.decode(objEncoded))
+        } catch (error) {
+            console.log('err. obj parse');
+        }
+    } else if (type === '!') { // boolean  1:true 0:false
+        let v = buffer.readInt8(offset);
+        return v === 1 ? true : false
+    } else {
+        throw TypeError('invalid data')
+
+    }
+}
+
+function flatSubArray(args) {
+    // prn('args',args)
+    let subArr = [];
+    let mainArr = args.filter(item => {
+        if (Array.isArray(item[0])) subArr = subArr.concat(item);
+        else return item
+    });
+    return mainArr.concat(subArr)
+}
+
+function pack(...args) {
+    let bufArr = flatSubArray(args);
+    let size = 0;
+    let info = [];
+    let offset = 0;
+
+    bufArr.forEach(bufPack => {
+        let [name, type, data] = bufPack;
+        size += data.byteLength;
+        if (typeof name === 'number' || name.length > 0) {
+            if (type.includes('N') || type.includes('B') || type.includes('S') || type.includes('O')) {
+                info.push([name, type, offset, data.byteLength]);
+            } else {
+                info.push([name, type, offset]);
+            }
+        }
+        offset = size;
+    });
+
+    let infoEncoded = encoder$1.encode(JSON.stringify(info));
+    let infoSize = infoEncoded.byteLength;
+    size = size + infoSize + 2;
+
+    let buffer$1 = buffer.Buffer.alloc(size);
+    offset = 0;
+    bufArr.forEach(bufPack => {
+        let buf = bufPack[2];
+        buffer$1.set(buf, offset);
+        offset += buf.byteLength;
+    });
+
+    buffer$1.set(infoEncoded, offset);
+    let infoSizeBuff = NB('16', infoSize);
+    buffer$1.set(infoSizeBuff, offset + infoSize);
+    return buffer$1
+}
+
+function unpack(binPack) {
+    let buffer$1 = buffer.Buffer.from(binPack);
+    let infoSize = buffer$1.readUInt16BE(buffer$1.byteLength - 2);
+    let infoFrom = buffer$1.byteLength - infoSize - 2;
+    let infoEncoded = buffer$1.subarray(infoFrom, buffer$1.byteLength - 2);
+    try {
+        let decoded = decoder$1.decode(infoEncoded);
+        let infoArr = JSON.parse(decoded);
+        let binObj = {};
+        infoArr.forEach(bufPack => {
+            let [name, type, offset, length] = bufPack;
+            binObj[name] = readTypedBuffer(type, buffer$1, offset, length);
+        });
+
+        // set args with values
+        if (binObj.$) {
+            let argLen = binObj.$;
+            let args = [];
+            for (let n = 0; n < argLen; n++) {
+                args.push(binObj[n]);
+            }
+            binObj.args = args;
+            binObj.$ = binObj.args;  // same  .args or .$
+        }
+        // prn('binObj',binObj)
+        return binObj
+    } catch (error) {
+        console.log('unpack: invalid data.', error);
+    }
+
+}
+
+
+
+
+/* simple parser and packer */
+// input: any
+// return uint8Array.  
+// *point*  if input number -> output is 1 byte Uint8Array that initialized by the input number.
+const U8 = parseUint8Array;
+function parseUint8Array(data) {
+
+    if (data == undefined) throw 'Invalid data type: Undefined'
+    if (typeof data === 'string') { // string > encode > uint8array
+        return encoder$1.encode(data)
+    } else if (typeof data === 'number') {  // number > 1 byte uint8array(number)
+        return Uint8Array.from([data])
+    } else if (data instanceof ArrayBuffer ) {  // arraybuffer > wrap uint8arra(ab)
+        return new Uint8Array(data)
+    } else if (ArrayBuffer.isView(data)) {
+        if (data instanceof Uint8Array ) {  // uint8array > return same .  accept Buffer too.
+            return data
+        } else {
+            return new Uint8Array(data.buffer, data.byteOffset, data.byteLength)  // DataView, TypedArray >  uint8array( use offset, length )
+        }
+    } else { // array, object 
+        return encoder$1.encode(JSON.stringify(data))  // object(array.. )  > JSON.str > encode > unint8array
+    }
+}
+
+// in:  arraybuffer,typedArray,DataView,number
+// return: unint8array
+// 1. normalize: any into Uint8array 
+// 2. return new buffer merged.
+const U8pack = parseUint8ThenConcat;
+function parseUint8ThenConcat(...dataArray) {
+    try {
+        let bufferSize = 0;
+        let offset = 0;
+        let buffers = dataArray.map(data => parseUint8Array(data));
+        buffers.forEach(buf => { bufferSize += buf.byteLength; });
+        let buffer = new Uint8Array(bufferSize);
+        buffers.forEach(buf => {
+            buffer.set(buf, offset);
+            offset += buf.byteLength;
+        });
+        return buffer
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+function hex(buffer) {
+    return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('')
+} // arraybuffer를 hex문자열로
+
+
+function prn(...data) {
+    console.log(...data);
+}
+
+var metaBufferPack = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  NB: NB,
+  numberBuffer: numberBuffer,
+  MB: MB$1,
+  metaBuffer: metaBuffer,
+  MBA: MBA,
+  metaBufferArguments: metaBufferArguments,
+  readTypedBuffer: readTypedBuffer,
+  pack: pack,
+  unpack: unpack,
+  U8: U8,
+  parseUint8Array: parseUint8Array,
+  U8pack: U8pack,
+  parseUint8ThenConcat: parseUint8ThenConcat,
+  hex: hex
+});
+
+const MB = MB$1;
+
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
-let webCrypto;
+exports.webCrypto = void 0;
 
 
 let isNode = false;
@@ -2750,41 +3121,36 @@ try {
 
 try {
     if (isNode) {
-
+        console.log('# node.js env:');
         Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('crypto')); }).then(crypto => {
-            //   console.log('loaded crypto:', crypto)
-            webCrypto = crypto.webcrypto;
-            webCryptoTest();
+              console.log('otpus webcrypto:');
+            exports.webCrypto = crypto.webcrypto;
+            // webCryptoTest();
         });
-        // webCrypto = crypto.webcrypto
-        // console.log('# node.js env:')
-
-
     } else if (typeof importScripts === 'function') {
-        webCrypto = self.crypto;
+        exports.webCrypto = self.crypto;
         console.log('# Web Worker env');
-        webCryptoTest();
+        // webCryptoTest();
     } else if (typeof document !== 'undefined') {
-        webCrypto = window.crypto;
+        exports.webCrypto = window.crypto;
         console.log('# browser env');
-        webCryptoTest();
+        // webCryptoTest();
     }
 
 } catch (error) {
-    console.log('init try: ', error);
+    console.log('webCrypto err: ', error);
 }
 
 
 function webCryptoTest() {
-    if (typeof webCrypto.subtle !== 'object') {
+    if (typeof exports.webCrypto.subtle !== 'object') {
         console.log('No WebCrypto API supported.');
-        return 'WebCrypto works only https or localhost on the browser.'
     } else {
         console.log('webCrypto test:');
-        let rand = webCrypto.getRandomValues(new Uint8Array(40));
+        let rand = exports.webCrypto.getRandomValues(new Uint8Array(40));
         console.log('1. getRandomValues: ', rand);
 
-        webCrypto.subtle.digest('SHA-256', rand).then(sum => {
+        exports.webCrypto.subtle.digest('SHA-256', rand).then(sum => {
             let hash1 = buf2hex(sum);
             let hash2 = hash.hex(rand);
             console.log('A.Compare binary hash sums');
@@ -2799,7 +3165,7 @@ function webCryptoTest() {
         });
         let message = buf2hex(rand.buffer);
 
-        webCrypto.subtle.digest('SHA-256', encoder.encode(message)).then(sum => {
+        exports.webCrypto.subtle.digest('SHA-256', encoder.encode(message)).then(sum => {
             let hash1 = buf2hex(sum);
             let hash2 = hash.hex(message);
             console.log('B.Compare string hash sums');
@@ -2815,13 +3181,6 @@ function webCryptoTest() {
 
     }
 }
-
-// let c = await import('crypto')
-// webCrypto = c.webcrypto;
-// console.log(webCrypto);
-// console.log(webCrypto.getRandomValues( new Uint8Array(8))) ;
-
-
 
 
 /*
@@ -2845,12 +3204,14 @@ function webCryptoTest() {
 */
 
 const msgPos = { msg: 0, hmac: -67, salt: -35, nPower: -3, msgLen: -2 };
+
+
 function encryptMsg(msg, key, nPower = 10) {
     const msgBuffer = encoder.encode(msg);
     const realMsgLen = msgBuffer.byteLength;
-    const saltBin = webCrypto.getRandomValues(new Uint8Array(32));
+    const saltBin = exports.webCrypto.getRandomValues(new Uint8Array(32));
     // var saltBin = new Uint8Array(32) ;
-    const randomSize = realMsgLen + parseInt(webCrypto.getRandomValues(new Uint8Array(1))[0] / 4); // 0~63.
+    const randomSize = realMsgLen + parseInt(exports.webCrypto.getRandomValues(new Uint8Array(1))[0] / 4); // 0~63.
     // var randomSize = 4;
     if (randomSize > 65536) {
         console.log('over msg size limit: it support about 64KB ascii characters.  or about 20K  UTF-8 characters ');
@@ -2870,7 +3231,7 @@ function encryptMsg(msg, key, nPower = 10) {
 
     let hmac = hash.hmac(masterKeyArr, msgBuffer);
 
-    bayoXSync(msgBufferExpanded, masterKeyArr, 0);
+    xotp(msgBufferExpanded, masterKeyArr, 0);
     const base64Buffer = new Uint8Array(msgBufferExpanded.byteLength + hmac.byteLength + saltBin.byteLength + 3);
     base64Buffer.set(msgBufferExpanded);
 
@@ -2883,6 +3244,67 @@ function encryptMsg(msg, key, nPower = 10) {
 }
 
 
+function encryptMsgPack(msg, key, nPower = 10) {
+    const msgBuffer = encoder.encode(msg);
+    const realMsgLen = msgBuffer.byteLength;
+    const saltBin = exports.webCrypto.getRandomValues(new Uint8Array(32));
+    // var saltBin = new Uint8Array(32) ;
+    const randomSize = realMsgLen + parseInt(exports.webCrypto.getRandomValues(new Uint8Array(1))[0] / 4); // 0~63.
+    // var randomSize = 4;
+    if (randomSize > 65536) {
+        console.log('over msg size limit: it support about 64KB ascii characters.  or about 20K  UTF-8 characters ');
+        return ''
+    }
+    if (nPower > 20) {
+        console.log('over ntimeKey limit: 16 max.');
+        return ''
+    }
+
+   
+    const msgBufferExpanded = new Uint8Array(randomSize);
+    msgBufferExpanded.set(msgBuffer);
+    const saltStr = buf2hex(saltBin);
+
+    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)));
+
+    let hmac = hash.hmac(masterKeyArr, msgBuffer);
+
+
+    xotp(msgBufferExpanded, masterKeyArr, 0);
+
+    let pack$1 = pack(
+        MB('msgBuffer', msgBufferExpanded),
+        MB('hmac', hmac ),
+        MB('salt', saltBin ),
+        MB('nPower','8',nPower),
+        MB('msgLen','16', msgBuffer.byteLength )
+    );
+        // console.log( pack )
+    return pack$1.toString('base64')
+
+}
+
+function decryptMsgPack(b64msg, key) {
+    let msgObj = unpack( buffer.Buffer.from(b64msg,'base64') );
+
+    // console.log( 'msgObj', msgObj)
+
+    if (msgObj.nPower > 20) {
+        console.log('warning: too much nPower:' + msgObj.nPower);
+        return 'nPower too large'
+    }
+    const saltStr = buf2hex( msgObj.salt);
+    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, msgObj.nPower)));
+    xotp(msgObj.msgBuffer , masterKeyArr, 0);
+    const realMsgBuffer = msgObj.msgBuffer.slice(0,  msgObj.msgLen );
+
+    let hmac = hash.hmac(masterKeyArr, realMsgBuffer);
+
+    if (!equal(hmac, msgObj.hmac )) return 'BROKEN'
+    const msg = decoder.decode(realMsgBuffer);
+
+    return msg
+}
 
 function decryptMsg(b64msg, key) {
     const totalBuffer = base64Js.toByteArray(b64msg);
@@ -2899,7 +3321,7 @@ function decryptMsg(b64msg, key) {
     }
     const saltStr = buf2hex(saltBin.buffer);
     const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)));
-    bayoXSync(expandedMsgBuffer, masterKeyArr, 0);
+    xotp(expandedMsgBuffer, masterKeyArr, 0);
     const realMsgBuffer = expandedMsgBuffer.slice(0, expandedMsgBuffer.indexOf(0));
 
     let hmac = hash.hmac(masterKeyArr, realMsgBuffer);
@@ -2910,49 +3332,52 @@ function decryptMsg(b64msg, key) {
     return msg
 }
 
-function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
+function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer ), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
 
 
-function bayoXSync(data, key, otpStartIndex = 0) {
+/*
+key:
+data:
+otpStartIndex:
 
+*/
+function xotp(data, key, otpStartIndex = 0) {
+
+    // SET.  32bytes key.
     let cryptoKey;
     if (key === null || key === undefined || key === '') {
         throw 'bayoX: cryptoKey is null or undefined'
-    } else if (key.constructor === ArrayBuffer) {
+    } else if (key instanceof ArrayBuffer) {
         cryptoKey = new Uint8Array(key);
     } else if (typeof key === 'string') {
         cryptoKey = new Uint8Array(hash.arrayBuffer(key));
-
     } else if (ArrayBuffer.isView(key)) {
-        if (key.constructor.name === 'Uint8Array') {
+        if (key instanceof Uint8Array) {
             cryptoKey = key;
         } else {
-            throw new Error('Use Uint8Array')
+            throw new Error('Accept key types : String, ArrayBuffer or Uint8Array')
         }
     } else {
         throw new Error('unsupported key data type')
     }
-
-
-    // console.log('cryptoKey:', cryptoKey )
-    // cryptoKey check
     if (cryptoKey.byteLength != 32) {
-        throw 'bayoX: cryptoKey byteLength dismatch. must 32Bytes'
+        throw 'cryptoKey byteLength not 32Bytes'
     }
 
+    // SET data Buffer.
     if (typeof data === 'string') {
         data = encoder.encode(data);
     } else if (ArrayBuffer.isView(data)) {
-        if (data.constructor.name === 'Uint8Array') ; else {
+        if (data instanceof Uint8Array) ; else {
+            console.log( 'err data',data );
             throw new Error('Use Uint8Array')
         }
-    } else if (data.constructor === ArrayBuffer) {
+    } else if (data instanceof ArrayBuffer) {
         data = new Uint8Array(data);
     } else {
         throw new Error('unsupported data type')
     }
 
-    // const u8Arr = dataBuffer
     const otpMasterKeyArr = new Uint32Array(9);
     const cryptoKeyArr = new Uint32Array(cryptoKey.buffer);
     otpMasterKeyArr.set(cryptoKeyArr);
@@ -2964,7 +3389,6 @@ function bayoXSync(data, key, otpStartIndex = 0) {
     const buf32Len = Math.floor(nBytes / 4); // byteLength / 4 => 4바이트의 배수
     // console.log(`bayoXCrypto src u8Arr .byteOffset: ${u8Arr.byteOffset} .byteLength: ${u8Arr.byteLength}  1/4 floored => buf32Len: ${buf32Len}`);
 
-    // 주의. 이부분은 새로운 버퍼 생성후 복제가 아니고 dataview 생성임. 공용체임.
     const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len);
 
     for (let i = 0; i < nTimes; i++) {
@@ -3012,14 +3436,18 @@ function nTimesHash(srcData, n) {
     return hashSum
 }
 
+exports.Buffer = buffer.Buffer;
+exports.MBP = metaBufferPack;
 exports.base64js = base64Js;
-exports.bayoXSync = bayoXSync;
 exports.buf2hex = buf2hex;
 exports.decoder = decoder;
 exports.decryptMsg = decryptMsg;
+exports.decryptMsgPack = decryptMsgPack;
 exports.encoder = encoder;
 exports.encryptMsg = encryptMsg;
+exports.encryptMsgPack = encryptMsgPack;
 exports.equal = equal;
 exports.nTimesHash = nTimesHash;
 exports.sha256 = hash;
 exports.webCryptoTest = webCryptoTest;
+exports.xotp = xotp;

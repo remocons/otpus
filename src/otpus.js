@@ -1,15 +1,18 @@
-import { sha256 } from './bayo-sha256.js'
-import { MBP } from 'meta-buffer-pack'
+import { sha256 } from './otpus-sha256.js'
+import { MBP ,Buffer } from 'meta-buffer-pack'
 import base64js from 'base64-js'
 
-export { sha256 } from './bayo-sha256.js'
+export { sha256 } from './otpus-sha256.js'
 export { base64js }
+export { MBP, Buffer }
+
+const MB = MBP.MB;
 
 
 export const encoder = new TextEncoder()
 export const decoder = new TextDecoder()
 
-let webCrypto
+export let webCrypto
 
 
 let isNode = false
@@ -19,35 +22,30 @@ try {
 
 try {
     if (isNode) {
-
+        console.log('# node.js env:')
         import('crypto').then(crypto => {
-            //   console.log('loaded crypto:', crypto)
+              console.log('otpus webcrypto:')
             webCrypto = crypto.webcrypto;
-            webCryptoTest();
+            // webCryptoTest();
         })
-        // webCrypto = crypto.webcrypto
-        // console.log('# node.js env:')
-
-
     } else if (typeof importScripts === 'function') {
         webCrypto = self.crypto
         console.log('# Web Worker env')
-        webCryptoTest();
+        // webCryptoTest();
     } else if (typeof document !== 'undefined') {
         webCrypto = window.crypto
         console.log('# browser env')
-        webCryptoTest();
+        // webCryptoTest();
     }
 
 } catch (error) {
-    console.log('init try: ', error)
+    console.log('webCrypto err: ', error)
 }
 
 
 export function webCryptoTest() {
     if (typeof webCrypto.subtle !== 'object') {
         console.log('No WebCrypto API supported.')
-        return 'WebCrypto works only https or localhost on the browser.'
     } else {
         console.log('webCrypto test:')
         let rand = webCrypto.getRandomValues(new Uint8Array(40))
@@ -85,13 +83,6 @@ export function webCryptoTest() {
     }
 }
 
-// let c = await import('crypto')
-// webCrypto = c.webcrypto;
-// console.log(webCrypto);
-// console.log(webCrypto.getRandomValues( new Uint8Array(8))) ;
-
-
-
 
 /*
     문자열을 UTF8호환 TextEncoder로 encode 하여 버퍼로 변환후 암호화한뒤 base64 문자열로 반환한다.
@@ -114,6 +105,8 @@ export function webCryptoTest() {
 */
 
 const msgPos = { msg: 0, hmac: -67, salt: -35, nPower: -3, msgLen: -2 }
+
+
 export function encryptMsg(msg, key, nPower = 10) {
     const msgBuffer = encoder.encode(msg)
     const realMsgLen = msgBuffer.byteLength
@@ -139,7 +132,7 @@ export function encryptMsg(msg, key, nPower = 10) {
 
     let hmac = sha256.hmac(masterKeyArr, msgBuffer)
 
-    bayoXSync(msgBufferExpanded, masterKeyArr, 0)
+    xotp(msgBufferExpanded, masterKeyArr, 0)
     const base64Buffer = new Uint8Array(msgBufferExpanded.byteLength + hmac.byteLength + saltBin.byteLength + 3)
     base64Buffer.set(msgBufferExpanded)
 
@@ -152,6 +145,67 @@ export function encryptMsg(msg, key, nPower = 10) {
 }
 
 
+export function encryptMsgPack(msg, key, nPower = 10) {
+    const msgBuffer = encoder.encode(msg)
+    const realMsgLen = msgBuffer.byteLength
+    const saltBin = webCrypto.getRandomValues(new Uint8Array(32))
+    // var saltBin = new Uint8Array(32) ;
+    const randomSize = realMsgLen + parseInt(webCrypto.getRandomValues(new Uint8Array(1))[0] / 4) // 0~63.
+    // var randomSize = 4;
+    if (randomSize > 65536) {
+        console.log('over msg size limit: it support about 64KB ascii characters.  or about 20K  UTF-8 characters ')
+        return ''
+    }
+    if (nPower > 20) {
+        console.log('over ntimeKey limit: 16 max.')
+        return ''
+    }
+
+   
+    const msgBufferExpanded = new Uint8Array(randomSize)
+    msgBufferExpanded.set(msgBuffer)
+    const saltStr = buf2hex(saltBin)
+
+    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)))
+
+    let hmac = sha256.hmac(masterKeyArr, msgBuffer)
+
+
+    xotp(msgBufferExpanded, masterKeyArr, 0)
+
+    let pack = MBP.pack(
+        MB('msgBuffer', msgBufferExpanded),
+        MB('hmac', hmac ),
+        MB('salt', saltBin ),
+        MB('nPower','8',nPower),
+        MB('msgLen','16', msgBuffer.byteLength )
+    )
+        // console.log( pack )
+    return pack.toString('base64')
+
+}
+
+export function decryptMsgPack(b64msg, key) {
+    let msgObj = MBP.unpack( Buffer.from(b64msg,'base64') )
+
+    // console.log( 'msgObj', msgObj)
+
+    if (msgObj.nPower > 20) {
+        console.log('warning: too much nPower:' + msgObj.nPower)
+        return 'nPower too large'
+    }
+    const saltStr = buf2hex( msgObj.salt)
+    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, msgObj.nPower)))
+    xotp(msgObj.msgBuffer , masterKeyArr, 0)
+    const realMsgBuffer = msgObj.msgBuffer.slice(0,  msgObj.msgLen )
+
+    let hmac = sha256.hmac(masterKeyArr, realMsgBuffer)
+
+    if (!equal(hmac, msgObj.hmac )) return 'BROKEN'
+    const msg = decoder.decode(realMsgBuffer)
+
+    return msg
+}
 
 export function decryptMsg(b64msg, key) {
     const totalBuffer = base64js.toByteArray(b64msg)
@@ -168,7 +222,7 @@ export function decryptMsg(b64msg, key) {
     }
     const saltStr = buf2hex(saltBin.buffer)
     const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)))
-    bayoXSync(expandedMsgBuffer, masterKeyArr, 0)
+    xotp(expandedMsgBuffer, masterKeyArr, 0)
     const realMsgBuffer = expandedMsgBuffer.slice(0, expandedMsgBuffer.indexOf(0))
 
     let hmac = sha256.hmac(masterKeyArr, realMsgBuffer)
@@ -179,51 +233,53 @@ export function decryptMsg(b64msg, key) {
     return msg
 }
 
-export function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
+export function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer ), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
 
 
-export function bayoXSync(data, key, otpStartIndex = 0) {
+/*
+key:
+data:
+otpStartIndex:
 
+*/
+export function xotp(data, key, otpStartIndex = 0) {
+
+    // SET.  32bytes key.
     let cryptoKey
     if (key === null || key === undefined || key === '') {
         throw 'bayoX: cryptoKey is null or undefined'
-    } else if (key.constructor === ArrayBuffer) {
+    } else if (key instanceof ArrayBuffer) {
         cryptoKey = new Uint8Array(key)
     } else if (typeof key === 'string') {
         cryptoKey = new Uint8Array(sha256.arrayBuffer(key))
-
     } else if (ArrayBuffer.isView(key)) {
-        if (key.constructor.name === 'Uint8Array') {
+        if (key instanceof Uint8Array) {
             cryptoKey = key
         } else {
-            throw new Error('Use Uint8Array')
+            throw new Error('Accept key types : String, ArrayBuffer or Uint8Array')
         }
     } else {
         throw new Error('unsupported key data type')
     }
-
-
-    // console.log('cryptoKey:', cryptoKey )
-    // cryptoKey check
     if (cryptoKey.byteLength != 32) {
-        throw 'bayoX: cryptoKey byteLength dismatch. must 32Bytes'
-        return
+        throw 'cryptoKey byteLength not 32Bytes'
     }
 
+    // SET data Buffer.
     if (typeof data === 'string') {
         data = encoder.encode(data)
     } else if (ArrayBuffer.isView(data)) {
-        if (data.constructor.name === 'Uint8Array') {
+        if (data instanceof Uint8Array) {
         } else {
+            console.log( 'err data',data )
             throw new Error('Use Uint8Array')
         }
-    } else if (data.constructor === ArrayBuffer) {
+    } else if (data instanceof ArrayBuffer) {
         data = new Uint8Array(data)
     } else {
         throw new Error('unsupported data type')
     }
 
-    // const u8Arr = dataBuffer
     const otpMasterKeyArr = new Uint32Array(9)
     const cryptoKeyArr = new Uint32Array(cryptoKey.buffer)
     otpMasterKeyArr.set(cryptoKeyArr)
@@ -235,7 +291,6 @@ export function bayoXSync(data, key, otpStartIndex = 0) {
     const buf32Len = Math.floor(nBytes / 4) // byteLength / 4 => 4바이트의 배수
     // console.log(`bayoXCrypto src u8Arr .byteOffset: ${u8Arr.byteOffset} .byteLength: ${u8Arr.byteLength}  1/4 floored => buf32Len: ${buf32Len}`);
 
-    // 주의. 이부분은 새로운 버퍼 생성후 복제가 아니고 dataview 생성임. 공용체임.
     const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len)
 
     for (let i = 0; i < nTimes; i++) {

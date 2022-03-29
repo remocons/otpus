@@ -1,12 +1,12 @@
 {
   "name": "otpus",
   "version": "1.0.0",
-  "description": "pseudo otp generator otp",
+  "description": "pseudo otp generator & cryptography tool",
   "main": "src/otpus.js",
-  "cjs":"dist/otpus.cjs",
-  "esm":"dist/otpus.mjs",
-  "browser":"dist/otpus.esm.js",
-  "browseriife":"dist/otpus.min.js",
+  "cjs": "dist/otpus.cjs",
+  "esm": "dist/otpus.mjs",
+  "browser": "dist/otpus.esm.js",
+  "browseriife": "dist/otpus.min.js",
   "type": "module",
   "directories": {
     "lib": "lib"
@@ -33,7 +33,7 @@
     "rollup-plugin-terser": "^7.0.2"
   },
   "dependencies": {
-    "meta-buffer-pack": "^0.1.0",
-    "base64-js": "^1.5.1"
+    "base64-js": "^1.5.1",
+    "meta-buffer-pack": "^0.1.3"
   }
 }

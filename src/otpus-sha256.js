@@ -1,7 +1,4 @@
 import {hash as sha256 , hmac } from '../lib/fast-sha256.js'
-// export * from '../lib/fast-sha256.js'
-
-// console.log('bayo-sha256', sha256)
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
@@ -34,7 +31,8 @@ sha256.hmac = function (key,data) {
   if (typeof data === 'string') {
     data = encoder.encode(data)
   } else if (ArrayBuffer.isView(data)) {
-    if (data.constructor.name === 'Uint8Array') {
+    // if (data.constructor.name === 'Uint8Array') {
+    if (data instanceof Uint8Array) {
     } else {
       throw new Error('Use Uint8Array')
     }
