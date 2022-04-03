@@ -1,87 +1,103 @@
-import { sha256 } from './otpus-sha256.js'
-import { MBP ,Buffer } from 'meta-buffer-pack'
-import base64js from 'base64-js'
-
-export { sha256 } from './otpus-sha256.js'
-export { base64js }
-export { MBP, Buffer }
-
-const MB = MBP.MB;
+import { webCrypto, sha256 , base64js , MBP, Buffer } from './otpus-util.js'
+export { webCrypto, sha256 , base64js , MBP, Buffer } 
 
 
-export const encoder = new TextEncoder()
-export const decoder = new TextDecoder()
+const encoder = new TextEncoder()
+const decoder = new TextDecoder()
 
-export let webCrypto
+export const encrypt = xotp;
+export const decrypt = xotp;
+
+// // 키생성.  변환, 일반화
+// OTPKey() : 32bytes 
+// OTPData() : n bytes 
+// otpGen( key)  : 32bytes
+// XOR( data, otp ) :   
+// 저용량은 신규버퍼 생성할수도 있지만,  대용량이거나 저사양 디바이스는 부적합.   
+
+// 현재의 구현. 
+
+// xotp ()  이건 위 기능이 뭉쳐있다.    분리할 필요가 없다?  분리하면 안된다. 
+// //분리할 필요가 없는 이유:  otp생성만으로 사요하지 않는다. 랜덤값은 랜덤함수가 있다.
+// optGen 은 사실 hash와 동일하다.  인덱스 추가해야 의미가 생긴다. 
+// indexedOTP 
+// otpg( key, index )
+
+//분리해야할 이유:  
+
+/**
+ * 
+ * @param {any} data string, binary
+ * @param {any} key string binary
+ * @param {number} otpStartIndex 0~ 2**32-1
+ * @returns 
+ * 
+ * 키값 변환
+ * 데이타 변환
+ * 데이타 크기만큼  otp키생성후 xor연산.
+ */
 
 
-let isNode = false
-try {
-    isNode = Object.prototype.toString.call(global.process) === '[object process]'
-} catch (e) { }
+// export function xotpcp(data, key, otpStartIndex = 0) {
+    
+//     return xotp( MBP.U8( data, false) , key, otpStartIndex )
+// }
 
-try {
-    if (isNode) {
-        console.log('# node.js env:')
-        import('crypto').then(crypto => {
-              console.log('otpus webcrypto:')
-            webCrypto = crypto.webcrypto;
-            // webCryptoTest();
-        })
-    } else if (typeof importScripts === 'function') {
-        webCrypto = self.crypto
-        console.log('# Web Worker env')
-        // webCryptoTest();
-    } else if (typeof document !== 'undefined') {
-        webCrypto = window.crypto
-        console.log('# browser env')
-        // webCryptoTest();
+export function xotp(data, key, otpStartIndex = 0) {
+
+    // SET.  32bytes key.
+    let cryptoKey = sha256.hash( key )
+    // console.log('xotp key', cryptoKey)
+    
+
+    // SET parse data : Uint8Array.
+    data = MBP.U8(data)
+    // console.log('xotp data', data)  
+
+    const otpMasterKeyArr = new Uint32Array(9)
+    const cryptoKeyArr = new Uint32Array(cryptoKey.buffer)
+    otpMasterKeyArr.set(cryptoKeyArr)
+    otpMasterKeyArr[8] = otpStartIndex
+    const nBytes = data.byteLength
+    const nTimes = Math.ceil(nBytes / 32) // 최소값 1   ; 필요한 otp 개수
+    const lastTime = nTimes - 1 // 최소값 0
+    const nRemains = nBytes % 32
+    const buf32Len = Math.floor(nBytes / 4) // byteLength / 4 => 4바이트의 배수
+    // console.log(`bayoXCrypto src u8Arr .byteOffset: ${u8Arr.byteOffset} .byteLength: ${u8Arr.byteLength}  1/4 floored => buf32Len: ${buf32Len}`);
+
+    const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len)
+
+    for (let i = 0; i < nTimes; i++) {
+        // 32바이트 단위로 원본 파일읽어서 otp 연산.
+        // 1. indexed psudo otp 생성
+        otpMasterKeyArr[8]++
+        const potp = sha256.hash(otpMasterKeyArr.buffer)
+        const potp32 = new Uint32Array(potp.buffer)
+
+        // console.log('potp', potp)
+        // console.log('potp32', potp32)
+        if (i == lastTime && nRemains != 0) { // 32바이트 이하 (나머지 Byte 연산)
+            const potp8 = potp;
+            for (let q = nBytes - nRemains, r = 0; r < nRemains; r++) { // 최대 31번
+                // console.log(`q:${q} r:${r}`);
+                data[q++] ^= potp8[r] // q;버퍼의 index   r; otp의 index
+            }
+        } else { // 4Bytes 단위 8회 연산
+            for (let ib = 0; ib < 8; ib++) buf32[i * 8 + ib] ^= potp32[ib]
+        }
     }
 
-} catch (error) {
-    console.log('webCrypto err: ', error)
+
+    return data
+
 }
 
 
-export function webCryptoTest() {
-    if (typeof webCrypto.subtle !== 'object') {
-        console.log('No WebCrypto API supported.')
-    } else {
-        console.log('webCrypto test:')
-        let rand = webCrypto.getRandomValues(new Uint8Array(40))
-        console.log('1. getRandomValues: ', rand)
 
-        webCrypto.subtle.digest('SHA-256', rand).then(sum => {
-            let hash1 = buf2hex(sum);
-            let hash2 = sha256.hex(rand);
-            console.log('A.Compare binary hash sums')
-            console.log('1. subtle.digest.sha256: ', hash1)
-            console.log('2. js.sha256: ', hash2)
-            if (hash1 === hash2) {
-                console.log('hash test: success.')
-            } else {
-                throw new Error('diffrent hash result')
-            }
 
-        })
-        let message = buf2hex(rand.buffer)
 
-        webCrypto.subtle.digest('SHA-256', encoder.encode(message)).then(sum => {
-            let hash1 = buf2hex(sum);
-            let hash2 = sha256.hex(message);
-            console.log('B.Compare string hash sums')
-            console.log('1. subtle.digest.sha256: ', hash1)
-            console.log('2. js.sha256: ', hash2)
-            if (hash1 === hash2) {
-                console.log('hash test: success.')
-            } else {
-                throw new Error('diffrent hash result')
-            }
 
-        })
 
-    }
-}
 
 
 /*
@@ -128,7 +144,7 @@ export function encryptMsg(msg, key, nPower = 10) {
     const msgBufferExpanded = new Uint8Array(randomSize)
     msgBufferExpanded.set(msgBuffer)
     const saltStr = buf2hex(saltBin.buffer)
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)))
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, nPower))
 
     let hmac = sha256.hmac(masterKeyArr, msgBuffer)
 
@@ -143,6 +159,9 @@ export function encryptMsg(msg, key, nPower = 10) {
     dv.setUint16(base64Buffer.byteLength + msgPos.msgLen, msgBufferExpanded.byteLength)
     return base64js.fromByteArray(base64Buffer)
 }
+    
+
+
 
 
 export function encryptMsgPack(msg, key, nPower = 10) {
@@ -161,12 +180,12 @@ export function encryptMsgPack(msg, key, nPower = 10) {
         return ''
     }
 
-   
+
     const msgBufferExpanded = new Uint8Array(randomSize)
     msgBufferExpanded.set(msgBuffer)
     const saltStr = buf2hex(saltBin)
 
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)))
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, nPower))
 
     let hmac = sha256.hmac(masterKeyArr, msgBuffer)
 
@@ -174,19 +193,19 @@ export function encryptMsgPack(msg, key, nPower = 10) {
     xotp(msgBufferExpanded, masterKeyArr, 0)
 
     let pack = MBP.pack(
-        MB('msgBuffer', msgBufferExpanded),
-        MB('hmac', hmac ),
-        MB('salt', saltBin ),
-        MB('nPower','8',nPower),
-        MB('msgLen','16', msgBuffer.byteLength )
+       MBP.MB('msgBuffer', msgBufferExpanded),
+       MBP.MB('hmac', hmac),
+       MBP.MB('salt', saltBin),
+       MBP.MB('nPower', '8', nPower),
+       MBP.MB('msgLen', '16', msgBuffer.byteLength)
     )
-        // console.log( pack )
+    // console.log( pack )
     return pack.toString('base64')
 
 }
 
 export function decryptMsgPack(b64msg, key) {
-    let msgObj = MBP.unpack( Buffer.from(b64msg,'base64') )
+    let msgObj = MBP.unpack(Buffer.from(b64msg, 'base64'))
 
     // console.log( 'msgObj', msgObj)
 
@@ -194,14 +213,14 @@ export function decryptMsgPack(b64msg, key) {
         console.log('warning: too much nPower:' + msgObj.nPower)
         return 'nPower too large'
     }
-    const saltStr = buf2hex( msgObj.salt)
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, msgObj.nPower)))
-    xotp(msgObj.msgBuffer , masterKeyArr, 0)
-    const realMsgBuffer = msgObj.msgBuffer.slice(0,  msgObj.msgLen )
+    const saltStr = buf2hex(msgObj.salt)
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, msgObj.nPower))
+    xotp(msgObj.msgBuffer, masterKeyArr, 0)
+    const realMsgBuffer = msgObj.msgBuffer.slice(0, msgObj.msgLen)
 
     let hmac = sha256.hmac(masterKeyArr, realMsgBuffer)
 
-    if (!equal(hmac, msgObj.hmac )) return 'BROKEN'
+    if (!equal(hmac, msgObj.hmac)) return 'BROKEN'
     const msg = decoder.decode(realMsgBuffer)
 
     return msg
@@ -221,7 +240,7 @@ export function decryptMsg(b64msg, key) {
         return 'nPower 값이 너무큰것같음'
     }
     const saltStr = buf2hex(saltBin.buffer)
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)))
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, nPower))
     xotp(expandedMsgBuffer, masterKeyArr, 0)
     const realMsgBuffer = expandedMsgBuffer.slice(0, expandedMsgBuffer.indexOf(0))
 
@@ -233,107 +252,28 @@ export function decryptMsg(b64msg, key) {
     return msg
 }
 
-export function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer ), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
+export function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
 
 
-/*
-key:
-data:
-otpStartIndex:
-
-*/
-export function xotp(data, key, otpStartIndex = 0) {
-
-    // SET.  32bytes key.
-    let cryptoKey
-    if (key === null || key === undefined || key === '') {
-        throw 'bayoX: cryptoKey is null or undefined'
-    } else if (key instanceof ArrayBuffer) {
-        cryptoKey = new Uint8Array(key)
-    } else if (typeof key === 'string') {
-        cryptoKey = new Uint8Array(sha256.arrayBuffer(key))
-    } else if (ArrayBuffer.isView(key)) {
-        if (key instanceof Uint8Array) {
-            cryptoKey = key
-        } else {
-            throw new Error('Accept key types : String, ArrayBuffer or Uint8Array')
-        }
-    } else {
-        throw new Error('unsupported key data type')
-    }
-    if (cryptoKey.byteLength != 32) {
-        throw 'cryptoKey byteLength not 32Bytes'
-    }
-
-    // SET data Buffer.
-    if (typeof data === 'string') {
-        data = encoder.encode(data)
-    } else if (ArrayBuffer.isView(data)) {
-        if (data instanceof Uint8Array) {
-        } else {
-            console.log( 'err data',data )
-            throw new Error('Use Uint8Array')
-        }
-    } else if (data instanceof ArrayBuffer) {
-        data = new Uint8Array(data)
-    } else {
-        throw new Error('unsupported data type')
-    }
-
-    const otpMasterKeyArr = new Uint32Array(9)
-    const cryptoKeyArr = new Uint32Array(cryptoKey.buffer)
-    otpMasterKeyArr.set(cryptoKeyArr)
-    otpMasterKeyArr[8] = otpStartIndex
-    const nBytes = data.byteLength
-    const nTimes = Math.ceil(nBytes / 32) // 최소값 1   ; 필요한 otp 개수
-    const lastTime = nTimes - 1 // 최소값 0
-    const nRemains = nBytes % 32
-    const buf32Len = Math.floor(nBytes / 4) // byteLength / 4 => 4바이트의 배수
-    // console.log(`bayoXCrypto src u8Arr .byteOffset: ${u8Arr.byteOffset} .byteLength: ${u8Arr.byteLength}  1/4 floored => buf32Len: ${buf32Len}`);
-
-    const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len)
-
-    for (let i = 0; i < nTimes; i++) {
-        // 32바이트 단위로 원본 파일읽어서 otp 연산.
-        // 1. indexed psudo otp 생성
-        otpMasterKeyArr[8]++
-        const potp = sha256.arrayBuffer(otpMasterKeyArr.buffer)
-        const potp32 = new Uint32Array(potp)
-
-        if (i == lastTime && nRemains != 0) { // 32바이트 이하 (나머지 Byte 연산)
-            const potp8 = new Uint8Array(potp)
-            for (let q = nBytes - nRemains, r = 0; r < nRemains; r++) { // 최대 31번
-                // console.log(`q:${q} r:${r}`);
-                data[q++] ^= potp8[r] // q;버퍼의 index   r; otp의 index
-            }
-        } else { // 4Bytes 단위 8회 연산
-            for (let ib = 0; ib < 8; ib++) buf32[i * 8 + ib] ^= potp32[ib]
-        }
-    }
-
-
-    return data
-
-}
 
 export function equal(buf1, buf2) {
-    if(buf1.byteLength != buf2.byteLength ) return false
-    for(let i = 0 ; i < buf1.byteLength; i++){
-      if(buf1[i] != buf2[i] ) return false
+    if (buf1.byteLength != buf2.byteLength) return false
+    for (let i = 0; i < buf1.byteLength; i++) {
+        if (buf1[i] != buf2[i]) return false
     }
-  
-    return true 
-  }
-  
+
+    return true
+}
+
 
 /* nTimesHash.   (PBKDF2 와 유사한 용도)
 최초  srcData로 arrayBuffer화 1회 연ㅏ 후  n회 반복.  총 hash 연산수는 n+1번임.
 입력: srcData:  참고로 문자열, UTF-8문자열 입력시 인코딩됨, array, typedarray, arraybuffer 모두 지원
-출력: arraybuffer 반환
+출력: Uint8Array 반환
 */
 
 export function nTimesHash(srcData, n) {
-    let hashSum = sha256.arrayBuffer(srcData)
-    for (let i = 0; i < n; i++) hashSum = sha256.arrayBuffer(hashSum)
+    let hashSum = sha256.hash(srcData)
+    for (let i = 0; i < n; i++) hashSum = sha256.hash(hashSum)
     return hashSum
 }

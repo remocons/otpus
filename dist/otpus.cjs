@@ -320,85 +320,31 @@ function hmac (key, data) {
   return digest
 }
 
-const encoder$2 = new TextEncoder();
-new TextDecoder();
-
-hash.arrayBuffer = function (data) {
-  if (typeof data === 'string') {
-    data = encoder$2.encode(data);
-  } else if (ArrayBuffer.isView(data)) {
-    if (data.constructor.name === 'Uint8Array') ; else {
-      throw new Error('Use Uint8Array')
-    }
-  } else if (data.constructor === ArrayBuffer) {
-    data = new Uint8Array(data);
-  } else {
-    throw new Error('unsupported data type')
-  }
-  return hash(data).buffer
-};
-
-hash.hex = function (data) {
-  const sum = hash.arrayBuffer(data);
-  return buf2hex$1(sum)
-};
-
-hash.hmac = function (key,data) {
-  if (typeof data === 'string') {
-    data = encoder$2.encode(data);
-  } else if (ArrayBuffer.isView(data)) {
-    // if (data.constructor.name === 'Uint8Array') {
-    if (data instanceof Uint8Array) ; else {
-      throw new Error('Use Uint8Array')
-    }
-  } else if (data.constructor === ArrayBuffer) {
-    data = new Uint8Array(data);
-  } else {
-    throw new Error('unsupported data type')
-  }
-
-  if (typeof key === 'string') {
-    key = encoder$2.encode(key);
-  } else if (ArrayBuffer.isView(key)) {
-    if (key.constructor.name === 'Uint8Array') ; else {
-      throw new Error('Use Uint8Array')
-    }
-  } else if (key.constructor === ArrayBuffer) {
-    key = new Uint8Array(key);
-  } else {
-    throw new Error('unsupported key type')
-  }
-  return hmac(key,data)
-  
-};  
-
-function buf2hex$1 (buffer) { return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('') }
-
 function createCommonjsModule(fn) {
   var module = { exports: {} };
 	return fn(module, module.exports), module.exports;
 }
 
-var byteLength_1 = byteLength;
-var toByteArray_1 = toByteArray;
-var fromByteArray_1 = fromByteArray;
+var byteLength_1$1 = byteLength$1;
+var toByteArray_1$1 = toByteArray$1;
+var fromByteArray_1$1 = fromByteArray$1;
 
-var lookup = [];
-var revLookup = [];
-var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
+var lookup$1 = [];
+var revLookup$1 = [];
+var Arr$1 = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
 
-var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-for (var i = 0, len = code.length; i < len; ++i) {
-  lookup[i] = code[i];
-  revLookup[code.charCodeAt(i)] = i;
+var code$1 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+for (var i$1 = 0, len$1 = code$1.length; i$1 < len$1; ++i$1) {
+  lookup$1[i$1] = code$1[i$1];
+  revLookup$1[code$1.charCodeAt(i$1)] = i$1;
 }
 
 // Support decoding URL-safe base64 strings, as Node.js does.
 // See: https://en.wikipedia.org/wiki/Base64#URL_applications
-revLookup['-'.charCodeAt(0)] = 62;
-revLookup['_'.charCodeAt(0)] = 63;
+revLookup$1['-'.charCodeAt(0)] = 62;
+revLookup$1['_'.charCodeAt(0)] = 63;
 
-function getLens (b64) {
+function getLens$1 (b64) {
   var len = b64.length;
 
   if (len % 4 > 0) {
@@ -418,24 +364,24 @@ function getLens (b64) {
 }
 
 // base64 is 4/3 + up to two characters of the original data
-function byteLength (b64) {
-  var lens = getLens(b64);
+function byteLength$1 (b64) {
+  var lens = getLens$1(b64);
   var validLen = lens[0];
   var placeHoldersLen = lens[1];
   return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
 }
 
-function _byteLength (b64, validLen, placeHoldersLen) {
+function _byteLength$1 (b64, validLen, placeHoldersLen) {
   return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
 }
 
-function toByteArray (b64) {
+function toByteArray$1 (b64) {
   var tmp;
-  var lens = getLens(b64);
+  var lens = getLens$1(b64);
   var validLen = lens[0];
   var placeHoldersLen = lens[1];
 
-  var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
+  var arr = new Arr$1(_byteLength$1(b64, validLen, placeHoldersLen));
 
   var curByte = 0;
 
@@ -447,10 +393,10 @@ function toByteArray (b64) {
   var i;
   for (i = 0; i < len; i += 4) {
     tmp =
-      (revLookup[b64.charCodeAt(i)] << 18) |
-      (revLookup[b64.charCodeAt(i + 1)] << 12) |
-      (revLookup[b64.charCodeAt(i + 2)] << 6) |
-      revLookup[b64.charCodeAt(i + 3)];
+      (revLookup$1[b64.charCodeAt(i)] << 18) |
+      (revLookup$1[b64.charCodeAt(i + 1)] << 12) |
+      (revLookup$1[b64.charCodeAt(i + 2)] << 6) |
+      revLookup$1[b64.charCodeAt(i + 3)];
     arr[curByte++] = (tmp >> 16) & 0xFF;
     arr[curByte++] = (tmp >> 8) & 0xFF;
     arr[curByte++] = tmp & 0xFF;
@@ -458,16 +404,16 @@ function toByteArray (b64) {
 
   if (placeHoldersLen === 2) {
     tmp =
-      (revLookup[b64.charCodeAt(i)] << 2) |
-      (revLookup[b64.charCodeAt(i + 1)] >> 4);
+      (revLookup$1[b64.charCodeAt(i)] << 2) |
+      (revLookup$1[b64.charCodeAt(i + 1)] >> 4);
     arr[curByte++] = tmp & 0xFF;
   }
 
   if (placeHoldersLen === 1) {
     tmp =
-      (revLookup[b64.charCodeAt(i)] << 10) |
-      (revLookup[b64.charCodeAt(i + 1)] << 4) |
-      (revLookup[b64.charCodeAt(i + 2)] >> 2);
+      (revLookup$1[b64.charCodeAt(i)] << 10) |
+      (revLookup$1[b64.charCodeAt(i + 1)] << 4) |
+      (revLookup$1[b64.charCodeAt(i + 2)] >> 2);
     arr[curByte++] = (tmp >> 8) & 0xFF;
     arr[curByte++] = tmp & 0xFF;
   }
@@ -475,14 +421,14 @@ function toByteArray (b64) {
   return arr
 }
 
-function tripletToBase64 (num) {
-  return lookup[num >> 18 & 0x3F] +
-    lookup[num >> 12 & 0x3F] +
-    lookup[num >> 6 & 0x3F] +
-    lookup[num & 0x3F]
+function tripletToBase64$1 (num) {
+  return lookup$1[num >> 18 & 0x3F] +
+    lookup$1[num >> 12 & 0x3F] +
+    lookup$1[num >> 6 & 0x3F] +
+    lookup$1[num & 0x3F]
 }
 
-function encodeChunk (uint8, start, end) {
+function encodeChunk$1 (uint8, start, end) {
   var tmp;
   var output = [];
   for (var i = start; i < end; i += 3) {
@@ -490,12 +436,12 @@ function encodeChunk (uint8, start, end) {
       ((uint8[i] << 16) & 0xFF0000) +
       ((uint8[i + 1] << 8) & 0xFF00) +
       (uint8[i + 2] & 0xFF);
-    output.push(tripletToBase64(tmp));
+    output.push(tripletToBase64$1(tmp));
   }
   return output.join('')
 }
 
-function fromByteArray (uint8) {
+function fromByteArray$1 (uint8) {
   var tmp;
   var len = uint8.length;
   var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
@@ -504,23 +450,23 @@ function fromByteArray (uint8) {
 
   // go through the array every three bytes, we'll deal with trailing stuff later
   for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
-    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)));
+    parts.push(encodeChunk$1(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)));
   }
 
   // pad the end with zeros, but make sure to not forget the extra bytes
   if (extraBytes === 1) {
     tmp = uint8[len - 1];
     parts.push(
-      lookup[tmp >> 2] +
-      lookup[(tmp << 4) & 0x3F] +
+      lookup$1[tmp >> 2] +
+      lookup$1[(tmp << 4) & 0x3F] +
       '=='
     );
   } else if (extraBytes === 2) {
     tmp = (uint8[len - 2] << 8) + uint8[len - 1];
     parts.push(
-      lookup[tmp >> 10] +
-      lookup[(tmp >> 4) & 0x3F] +
-      lookup[(tmp << 2) & 0x3F] +
+      lookup$1[tmp >> 10] +
+      lookup$1[(tmp >> 4) & 0x3F] +
+      lookup$1[(tmp << 2) & 0x3F] +
       '='
     );
   }
@@ -528,10 +474,10 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-var base64Js = {
-	byteLength: byteLength_1,
-	toByteArray: toByteArray_1,
-	fromByteArray: fromByteArray_1
+var base64Js$1 = {
+	byteLength: byteLength_1$1,
+	toByteArray: toByteArray_1$1,
+	fromByteArray: fromByteArray_1$1
 };
 
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
@@ -1569,9 +1515,9 @@ Buffer.prototype.toJSON = function toJSON () {
 
 function base64Slice (buf, start, end) {
   if (start === 0 && end === buf.length) {
-    return base64Js.fromByteArray(buf)
+    return base64Js$1.fromByteArray(buf)
   } else {
-    return base64Js.fromByteArray(buf.slice(start, end))
+    return base64Js$1.fromByteArray(buf.slice(start, end))
   }
 }
 
@@ -2683,7 +2629,7 @@ function utf16leToBytes (str, units) {
 }
 
 function base64ToBytes (str) {
-  return base64Js.toByteArray(base64clean(str))
+  return base64Js$1.toByteArray(base64clean(str))
 }
 
 function blitBuffer (src, dst, offset, length) {
@@ -2732,19 +2678,19 @@ function BufferBigIntNotDefined () {
 }
 });
 
-const encoder$1 = new TextEncoder();
+const encoder$1 = new TextEncoder(); 
 const decoder$1 = new TextDecoder();
 
-/*  
-@params:
+/*     
+@params: 
 -type: It's string keyword that indicate datatype.
-  8, 16, 32     default:  read and write as Uint. BigEndian.
-  i8, i16,      includes 'I' then read and write as Int.
+  8, 16, 32     default:  read and write as Unsigned. BigEndian.
+  i8, i16,      includes 'I' then read and write as Signed value.
   16L , i16l    includes 'L  then read and write as LittleEndian.
 -value:  number to store the buffer
 return: Buffer
 */
-
+ 
 const NB = numberBuffer;
 function numberBuffer(type, initValue = 0) {
     let buffer$1;
@@ -2826,7 +2772,7 @@ ex.
 
 */
 
-const MB$1 = metaBuffer;
+const MB = metaBuffer;
 function metaBuffer(name, typeOrData, initValue) {
     let buffer$1;
     let bufferType = 'B';
@@ -2869,24 +2815,25 @@ function metaBufferArguments(...args) {
     let i = 0;
     let mba = args.map(
         data => {
-            let argsIndex = i++;  // index number becom metabuffer's name.
+            let argsIndex = i++;  // index number become metabuffer's name.
             if (typeof data === 'number') {
                 // * JS's primitive Number stored as string. 
-                return MB$1(argsIndex, 'N', data)
+                return MB(argsIndex, 'N', data)
             } else {
                 // typedarray, dataview, array, object, boolean
-                return MB$1(argsIndex, data)
+                return MB(argsIndex, data)
             }
         });
 
     // add parameter length. 
-    mba.push(MB$1('$', '8', mba.length));
+    mba.push(MB('$', '8', mba.length));
     return mba
 }
 
 
 
 function readTypedBuffer(type, buffer, offset, length) {
+    
     // prn('RTB type',type)
     if (type.includes('8')) {
         if (type.includes('I')) {
@@ -3030,34 +2977,69 @@ function unpack(binPack) {
 
 
 
-/* simple parser and packer */
 // input: any
 // return uint8Array.  
-// *point*  if input number -> output is 1 byte Uint8Array that initialized by the input number.
+// shareArrayBuffer option:    false(default):  return new( or copied) ArrayBuffer.    true: share the input data's arrayBuffer. 
+
 const U8 = parseUint8Array;
-function parseUint8Array(data) {
+function parseUint8Array(data , shareArrayBuffer = false) {  
 
     if (data == undefined) throw 'Invalid data type: Undefined'
     if (typeof data === 'string') { // string > encode > uint8array
         return encoder$1.encode(data)
     } else if (typeof data === 'number') {  // number > 1 byte uint8array(number)
         return Uint8Array.from([data])
-    } else if (data instanceof ArrayBuffer ) {  // arraybuffer > wrap uint8arra(ab)
-        return new Uint8Array(data)
-    } else if (ArrayBuffer.isView(data)) {
-        if (data instanceof Uint8Array ) {  // uint8array > return same .  accept Buffer too.
-            return data
-        } else {
+    } else if (data instanceof ArrayBuffer) {  // arraybuffer > wrap uint8array(ab)
+        if(shareArrayBuffer){
+            return new Uint8Array(data)
+        } 
+        else {
+            let originData = new Uint8Array(data); 
+            let dataCopy = new Uint8Array( data.byteLength );
+            dataCopy.set( originData );
+            return dataCopy
+        }
+    } else if (ArrayBuffer.isView(data)) {   // accept Buffer too.
+        if( shareArrayBuffer){
             return new Uint8Array(data.buffer, data.byteOffset, data.byteLength)  // DataView, TypedArray >  uint8array( use offset, length )
+        }else {
+            // typedarry 의 모든 버퍼를  새로운 uint8로 복제.
+            let originData = new Uint8Array(data.buffer, data.byteOffset, data.byteLength); 
+            let dataCopy = new Uint8Array( data.byteLength);
+            dataCopy.set( originData  ); 
+            return dataCopy
         }
     } else { // array, object 
         return encoder$1.encode(JSON.stringify(data))  // object(array.. )  > JSON.str > encode > unint8array
     }
 }
 
-// in:  arraybuffer,typedArray,DataView,number
-// return: unint8array
-// 1. normalize: any into Uint8array 
+const B8 = parseBuffer;
+function parseBuffer( data, shareArrayBuffer = false ){
+    const u8 = parseUint8Array( data, shareArrayBuffer);
+    return buffer.Buffer.from( u8 )
+}
+
+const B8pack = parseBufferThenConcat;
+function parseBufferThenConcat( ...dataArray ){
+    try {
+        let bufferSize = 0;
+        let offset = 0;
+        let buffers = dataArray.map(data => parseBuffer(data));
+        buffers.forEach(buf => { bufferSize += buf.byteLength; });
+        let buffer$1 = buffer.Buffer.alloc(bufferSize);
+        buffers.forEach(buf => { 
+            buffer$1.set(buf, offset);
+            offset += buf.byteLength;
+        });
+        return buffer$1
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+
+// 1. normalize: Uint8array list 
 // 2. return new buffer merged.
 const U8pack = parseUint8ThenConcat;
 function parseUint8ThenConcat(...dataArray) {
@@ -3080,8 +3062,17 @@ function parseUint8ThenConcat(...dataArray) {
 
 function hex(buffer) {
     return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('')
-} // arraybuffer를 hex문자열로
+} 
 
+
+function equal$1(buf1, buf2) {
+    if (buf1.byteLength != buf2.byteLength) return false
+    for (let i = 0; i < buf1.byteLength; i++) {
+        if (buf1[i] != buf2[i]) return false
+    }
+
+    return true
+}
 
 function prn(...data) {
     console.log(...data);
@@ -3089,9 +3080,10 @@ function prn(...data) {
 
 var metaBufferPack = /*#__PURE__*/Object.freeze({
   __proto__: null,
+  Buffer: buffer.Buffer,
   NB: NB,
   numberBuffer: numberBuffer,
-  MB: MB$1,
+  MB: MB,
   metaBuffer: metaBuffer,
   MBA: MBA,
   metaBufferArguments: metaBufferArguments,
@@ -3100,19 +3092,187 @@ var metaBufferPack = /*#__PURE__*/Object.freeze({
   unpack: unpack,
   U8: U8,
   parseUint8Array: parseUint8Array,
+  B8: B8,
+  parseBuffer: parseBuffer,
+  B8pack: B8pack,
+  parseBufferThenConcat: parseBufferThenConcat,
   U8pack: U8pack,
   parseUint8ThenConcat: parseUint8ThenConcat,
-  hex: hex
+  hex: hex,
+  equal: equal$1
 });
 
-const MB = MB$1;
+hash.hash = function (data) {
+  return hash(U8(data))
+};
 
+hash.hex = function (data) {
+  return hex(hash.hash(data))
+};
 
-const encoder = new TextEncoder();
-const decoder = new TextDecoder();
+hash.hmac = function (key, data) {
+  return hmac(U8(key), U8(data))
+};
+
+var byteLength_1 = byteLength;
+var toByteArray_1 = toByteArray;
+var fromByteArray_1 = fromByteArray;
+
+var lookup = [];
+var revLookup = [];
+var Arr = typeof Uint8Array !== 'undefined' ? Uint8Array : Array;
+
+var code = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+for (var i = 0, len = code.length; i < len; ++i) {
+  lookup[i] = code[i];
+  revLookup[code.charCodeAt(i)] = i;
+}
+
+// Support decoding URL-safe base64 strings, as Node.js does.
+// See: https://en.wikipedia.org/wiki/Base64#URL_applications
+revLookup['-'.charCodeAt(0)] = 62;
+revLookup['_'.charCodeAt(0)] = 63;
+
+function getLens (b64) {
+  var len = b64.length;
+
+  if (len % 4 > 0) {
+    throw new Error('Invalid string. Length must be a multiple of 4')
+  }
+
+  // Trim off extra bytes after placeholder bytes are found
+  // See: https://github.com/beatgammit/base64-js/issues/42
+  var validLen = b64.indexOf('=');
+  if (validLen === -1) validLen = len;
+
+  var placeHoldersLen = validLen === len
+    ? 0
+    : 4 - (validLen % 4);
+
+  return [validLen, placeHoldersLen]
+}
+
+// base64 is 4/3 + up to two characters of the original data
+function byteLength (b64) {
+  var lens = getLens(b64);
+  var validLen = lens[0];
+  var placeHoldersLen = lens[1];
+  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
+}
+
+function _byteLength (b64, validLen, placeHoldersLen) {
+  return ((validLen + placeHoldersLen) * 3 / 4) - placeHoldersLen
+}
+
+function toByteArray (b64) {
+  var tmp;
+  var lens = getLens(b64);
+  var validLen = lens[0];
+  var placeHoldersLen = lens[1];
+
+  var arr = new Arr(_byteLength(b64, validLen, placeHoldersLen));
+
+  var curByte = 0;
+
+  // if there are placeholders, only get up to the last complete 4 chars
+  var len = placeHoldersLen > 0
+    ? validLen - 4
+    : validLen;
+
+  var i;
+  for (i = 0; i < len; i += 4) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 18) |
+      (revLookup[b64.charCodeAt(i + 1)] << 12) |
+      (revLookup[b64.charCodeAt(i + 2)] << 6) |
+      revLookup[b64.charCodeAt(i + 3)];
+    arr[curByte++] = (tmp >> 16) & 0xFF;
+    arr[curByte++] = (tmp >> 8) & 0xFF;
+    arr[curByte++] = tmp & 0xFF;
+  }
+
+  if (placeHoldersLen === 2) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 2) |
+      (revLookup[b64.charCodeAt(i + 1)] >> 4);
+    arr[curByte++] = tmp & 0xFF;
+  }
+
+  if (placeHoldersLen === 1) {
+    tmp =
+      (revLookup[b64.charCodeAt(i)] << 10) |
+      (revLookup[b64.charCodeAt(i + 1)] << 4) |
+      (revLookup[b64.charCodeAt(i + 2)] >> 2);
+    arr[curByte++] = (tmp >> 8) & 0xFF;
+    arr[curByte++] = tmp & 0xFF;
+  }
+
+  return arr
+}
+
+function tripletToBase64 (num) {
+  return lookup[num >> 18 & 0x3F] +
+    lookup[num >> 12 & 0x3F] +
+    lookup[num >> 6 & 0x3F] +
+    lookup[num & 0x3F]
+}
+
+function encodeChunk (uint8, start, end) {
+  var tmp;
+  var output = [];
+  for (var i = start; i < end; i += 3) {
+    tmp =
+      ((uint8[i] << 16) & 0xFF0000) +
+      ((uint8[i + 1] << 8) & 0xFF00) +
+      (uint8[i + 2] & 0xFF);
+    output.push(tripletToBase64(tmp));
+  }
+  return output.join('')
+}
+
+function fromByteArray (uint8) {
+  var tmp;
+  var len = uint8.length;
+  var extraBytes = len % 3; // if we have 1 byte left, pad 2 bytes
+  var parts = [];
+  var maxChunkLength = 16383; // must be multiple of 3
+
+  // go through the array every three bytes, we'll deal with trailing stuff later
+  for (var i = 0, len2 = len - extraBytes; i < len2; i += maxChunkLength) {
+    parts.push(encodeChunk(uint8, i, (i + maxChunkLength) > len2 ? len2 : (i + maxChunkLength)));
+  }
+
+  // pad the end with zeros, but make sure to not forget the extra bytes
+  if (extraBytes === 1) {
+    tmp = uint8[len - 1];
+    parts.push(
+      lookup[tmp >> 2] +
+      lookup[(tmp << 4) & 0x3F] +
+      '=='
+    );
+  } else if (extraBytes === 2) {
+    tmp = (uint8[len - 2] << 8) + uint8[len - 1];
+    parts.push(
+      lookup[tmp >> 10] +
+      lookup[(tmp >> 4) & 0x3F] +
+      lookup[(tmp << 2) & 0x3F] +
+      '='
+    );
+  }
+
+  return parts.join('')
+}
+
+var base64Js = {
+	byteLength: byteLength_1,
+	toByteArray: toByteArray_1,
+	fromByteArray: fromByteArray_1
+};
 
 exports.webCrypto = void 0;
 
+new TextEncoder();
+new TextDecoder();
 
 let isNode = false;
 try {
@@ -3123,7 +3283,7 @@ try {
     if (isNode) {
         console.log('# node.js env:');
         Promise.resolve().then(function () { return /*#__PURE__*/_interopNamespace(require('crypto')); }).then(crypto => {
-              console.log('otpus webcrypto:');
+            console.log('otpus webcrypto:');
             exports.webCrypto = crypto.webcrypto;
             // webCryptoTest();
         });
@@ -3141,46 +3301,102 @@ try {
     console.log('webCrypto err: ', error);
 }
 
+const encoder = new TextEncoder();
+const decoder = new TextDecoder();
 
-function webCryptoTest() {
-    if (typeof exports.webCrypto.subtle !== 'object') {
-        console.log('No WebCrypto API supported.');
-    } else {
-        console.log('webCrypto test:');
-        let rand = exports.webCrypto.getRandomValues(new Uint8Array(40));
-        console.log('1. getRandomValues: ', rand);
+const encrypt = xotp;
+const decrypt = xotp;
 
-        exports.webCrypto.subtle.digest('SHA-256', rand).then(sum => {
-            let hash1 = buf2hex(sum);
-            let hash2 = hash.hex(rand);
-            console.log('A.Compare binary hash sums');
-            console.log('1. subtle.digest.sha256: ', hash1);
-            console.log('2. js.sha256: ', hash2);
-            if (hash1 === hash2) {
-                console.log('hash test: success.');
-            } else {
-                throw new Error('diffrent hash result')
+// // 키생성.  변환, 일반화
+// OTPKey() : 32bytes 
+// OTPData() : n bytes 
+// otpGen( key)  : 32bytes
+// XOR( data, otp ) :   
+// 저용량은 신규버퍼 생성할수도 있지만,  대용량이거나 저사양 디바이스는 부적합.   
+
+// 현재의 구현. 
+
+// xotp ()  이건 위 기능이 뭉쳐있다.    분리할 필요가 없다?  분리하면 안된다. 
+// //분리할 필요가 없는 이유:  otp생성만으로 사요하지 않는다. 랜덤값은 랜덤함수가 있다.
+// optGen 은 사실 hash와 동일하다.  인덱스 추가해야 의미가 생긴다. 
+// indexedOTP 
+// otpg( key, index )
+
+//분리해야할 이유:  
+
+/**
+ * 
+ * @param {any} data string, binary
+ * @param {any} key string binary
+ * @param {number} otpStartIndex 0~ 2**32-1
+ * @returns 
+ * 
+ * 키값 변환
+ * 데이타 변환
+ * 데이타 크기만큼  otp키생성후 xor연산.
+ */
+
+
+// export function xotpcp(data, key, otpStartIndex = 0) {
+    
+//     return xotp( MBP.U8( data, false) , key, otpStartIndex )
+// }
+
+function xotp(data, key, otpStartIndex = 0) {
+
+    // SET.  32bytes key.
+    let cryptoKey = hash.hash( key );
+    // console.log('xotp key', cryptoKey)
+    
+
+    // SET parse data : Uint8Array.
+    data = U8(data);
+    // console.log('xotp data', data)  
+
+    const otpMasterKeyArr = new Uint32Array(9);
+    const cryptoKeyArr = new Uint32Array(cryptoKey.buffer);
+    otpMasterKeyArr.set(cryptoKeyArr);
+    otpMasterKeyArr[8] = otpStartIndex;
+    const nBytes = data.byteLength;
+    const nTimes = Math.ceil(nBytes / 32); // 최소값 1   ; 필요한 otp 개수
+    const lastTime = nTimes - 1; // 최소값 0
+    const nRemains = nBytes % 32;
+    const buf32Len = Math.floor(nBytes / 4); // byteLength / 4 => 4바이트의 배수
+    // console.log(`bayoXCrypto src u8Arr .byteOffset: ${u8Arr.byteOffset} .byteLength: ${u8Arr.byteLength}  1/4 floored => buf32Len: ${buf32Len}`);
+
+    const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len);
+
+    for (let i = 0; i < nTimes; i++) {
+        // 32바이트 단위로 원본 파일읽어서 otp 연산.
+        // 1. indexed psudo otp 생성
+        otpMasterKeyArr[8]++;
+        const potp = hash.hash(otpMasterKeyArr.buffer);
+        const potp32 = new Uint32Array(potp.buffer);
+
+        // console.log('potp', potp)
+        // console.log('potp32', potp32)
+        if (i == lastTime && nRemains != 0) { // 32바이트 이하 (나머지 Byte 연산)
+            const potp8 = potp;
+            for (let q = nBytes - nRemains, r = 0; r < nRemains; r++) { // 최대 31번
+                // console.log(`q:${q} r:${r}`);
+                data[q++] ^= potp8[r]; // q;버퍼의 index   r; otp의 index
             }
-
-        });
-        let message = buf2hex(rand.buffer);
-
-        exports.webCrypto.subtle.digest('SHA-256', encoder.encode(message)).then(sum => {
-            let hash1 = buf2hex(sum);
-            let hash2 = hash.hex(message);
-            console.log('B.Compare string hash sums');
-            console.log('1. subtle.digest.sha256: ', hash1);
-            console.log('2. js.sha256: ', hash2);
-            if (hash1 === hash2) {
-                console.log('hash test: success.');
-            } else {
-                throw new Error('diffrent hash result')
-            }
-
-        });
-
+        } else { // 4Bytes 단위 8회 연산
+            for (let ib = 0; ib < 8; ib++) buf32[i * 8 + ib] ^= potp32[ib];
+        }
     }
+
+
+    return data
+
 }
+
+
+
+
+
+
+
 
 
 /*
@@ -3227,7 +3443,7 @@ function encryptMsg(msg, key, nPower = 10) {
     const msgBufferExpanded = new Uint8Array(randomSize);
     msgBufferExpanded.set(msgBuffer);
     const saltStr = buf2hex(saltBin.buffer);
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)));
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, nPower));
 
     let hmac = hash.hmac(masterKeyArr, msgBuffer);
 
@@ -3242,6 +3458,9 @@ function encryptMsg(msg, key, nPower = 10) {
     dv.setUint16(base64Buffer.byteLength + msgPos.msgLen, msgBufferExpanded.byteLength);
     return base64Js.fromByteArray(base64Buffer)
 }
+    
+
+
 
 
 function encryptMsgPack(msg, key, nPower = 10) {
@@ -3260,12 +3479,12 @@ function encryptMsgPack(msg, key, nPower = 10) {
         return ''
     }
 
-   
+
     const msgBufferExpanded = new Uint8Array(randomSize);
     msgBufferExpanded.set(msgBuffer);
     const saltStr = buf2hex(saltBin);
 
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)));
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, nPower));
 
     let hmac = hash.hmac(masterKeyArr, msgBuffer);
 
@@ -3273,19 +3492,19 @@ function encryptMsgPack(msg, key, nPower = 10) {
     xotp(msgBufferExpanded, masterKeyArr, 0);
 
     let pack$1 = pack(
-        MB('msgBuffer', msgBufferExpanded),
-        MB('hmac', hmac ),
-        MB('salt', saltBin ),
-        MB('nPower','8',nPower),
-        MB('msgLen','16', msgBuffer.byteLength )
+       MB('msgBuffer', msgBufferExpanded),
+       MB('hmac', hmac),
+       MB('salt', saltBin),
+       MB('nPower', '8', nPower),
+       MB('msgLen', '16', msgBuffer.byteLength)
     );
-        // console.log( pack )
+    // console.log( pack )
     return pack$1.toString('base64')
 
 }
 
 function decryptMsgPack(b64msg, key) {
-    let msgObj = unpack( buffer.Buffer.from(b64msg,'base64') );
+    let msgObj = unpack(buffer.Buffer.from(b64msg, 'base64'));
 
     // console.log( 'msgObj', msgObj)
 
@@ -3293,14 +3512,14 @@ function decryptMsgPack(b64msg, key) {
         console.log('warning: too much nPower:' + msgObj.nPower);
         return 'nPower too large'
     }
-    const saltStr = buf2hex( msgObj.salt);
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, msgObj.nPower)));
-    xotp(msgObj.msgBuffer , masterKeyArr, 0);
-    const realMsgBuffer = msgObj.msgBuffer.slice(0,  msgObj.msgLen );
+    const saltStr = buf2hex(msgObj.salt);
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, msgObj.nPower));
+    xotp(msgObj.msgBuffer, masterKeyArr, 0);
+    const realMsgBuffer = msgObj.msgBuffer.slice(0, msgObj.msgLen);
 
     let hmac = hash.hmac(masterKeyArr, realMsgBuffer);
 
-    if (!equal(hmac, msgObj.hmac )) return 'BROKEN'
+    if (!equal(hmac, msgObj.hmac)) return 'BROKEN'
     const msg = decoder.decode(realMsgBuffer);
 
     return msg
@@ -3320,7 +3539,7 @@ function decryptMsg(b64msg, key) {
         return 'nPower 값이 너무큰것같음'
     }
     const saltStr = buf2hex(saltBin.buffer);
-    const masterKeyArr = new Uint8Array(nTimesHash(saltStr + key, Math.pow(2, nPower)));
+    const masterKeyArr = nTimesHash(saltStr + key, Math.pow(2, nPower));
     xotp(expandedMsgBuffer, masterKeyArr, 0);
     const realMsgBuffer = expandedMsgBuffer.slice(0, expandedMsgBuffer.indexOf(0));
 
@@ -3332,107 +3551,29 @@ function decryptMsg(b64msg, key) {
     return msg
 }
 
-function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer ), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
+function buf2hex(buffer) { return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('') } // arraybuffer를 hex문자열로
 
 
-/*
-key:
-data:
-otpStartIndex:
-
-*/
-function xotp(data, key, otpStartIndex = 0) {
-
-    // SET.  32bytes key.
-    let cryptoKey;
-    if (key === null || key === undefined || key === '') {
-        throw 'bayoX: cryptoKey is null or undefined'
-    } else if (key instanceof ArrayBuffer) {
-        cryptoKey = new Uint8Array(key);
-    } else if (typeof key === 'string') {
-        cryptoKey = new Uint8Array(hash.arrayBuffer(key));
-    } else if (ArrayBuffer.isView(key)) {
-        if (key instanceof Uint8Array) {
-            cryptoKey = key;
-        } else {
-            throw new Error('Accept key types : String, ArrayBuffer or Uint8Array')
-        }
-    } else {
-        throw new Error('unsupported key data type')
-    }
-    if (cryptoKey.byteLength != 32) {
-        throw 'cryptoKey byteLength not 32Bytes'
-    }
-
-    // SET data Buffer.
-    if (typeof data === 'string') {
-        data = encoder.encode(data);
-    } else if (ArrayBuffer.isView(data)) {
-        if (data instanceof Uint8Array) ; else {
-            console.log( 'err data',data );
-            throw new Error('Use Uint8Array')
-        }
-    } else if (data instanceof ArrayBuffer) {
-        data = new Uint8Array(data);
-    } else {
-        throw new Error('unsupported data type')
-    }
-
-    const otpMasterKeyArr = new Uint32Array(9);
-    const cryptoKeyArr = new Uint32Array(cryptoKey.buffer);
-    otpMasterKeyArr.set(cryptoKeyArr);
-    otpMasterKeyArr[8] = otpStartIndex;
-    const nBytes = data.byteLength;
-    const nTimes = Math.ceil(nBytes / 32); // 최소값 1   ; 필요한 otp 개수
-    const lastTime = nTimes - 1; // 최소값 0
-    const nRemains = nBytes % 32;
-    const buf32Len = Math.floor(nBytes / 4); // byteLength / 4 => 4바이트의 배수
-    // console.log(`bayoXCrypto src u8Arr .byteOffset: ${u8Arr.byteOffset} .byteLength: ${u8Arr.byteLength}  1/4 floored => buf32Len: ${buf32Len}`);
-
-    const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len);
-
-    for (let i = 0; i < nTimes; i++) {
-        // 32바이트 단위로 원본 파일읽어서 otp 연산.
-        // 1. indexed psudo otp 생성
-        otpMasterKeyArr[8]++;
-        const potp = hash.arrayBuffer(otpMasterKeyArr.buffer);
-        const potp32 = new Uint32Array(potp);
-
-        if (i == lastTime && nRemains != 0) { // 32바이트 이하 (나머지 Byte 연산)
-            const potp8 = new Uint8Array(potp);
-            for (let q = nBytes - nRemains, r = 0; r < nRemains; r++) { // 최대 31번
-                // console.log(`q:${q} r:${r}`);
-                data[q++] ^= potp8[r]; // q;버퍼의 index   r; otp의 index
-            }
-        } else { // 4Bytes 단위 8회 연산
-            for (let ib = 0; ib < 8; ib++) buf32[i * 8 + ib] ^= potp32[ib];
-        }
-    }
-
-
-    return data
-
-}
 
 function equal(buf1, buf2) {
-    if(buf1.byteLength != buf2.byteLength ) return false
-    for(let i = 0 ; i < buf1.byteLength; i++){
-      if(buf1[i] != buf2[i] ) return false
+    if (buf1.byteLength != buf2.byteLength) return false
+    for (let i = 0; i < buf1.byteLength; i++) {
+        if (buf1[i] != buf2[i]) return false
     }
-  
-    return true 
-  }
-  
+
+    return true
+}
+
 
 /* nTimesHash.   (PBKDF2 와 유사한 용도)
 최초  srcData로 arrayBuffer화 1회 연ㅏ 후  n회 반복.  총 hash 연산수는 n+1번임.
 입력: srcData:  참고로 문자열, UTF-8문자열 입력시 인코딩됨, array, typedarray, arraybuffer 모두 지원
-출력: arraybuffer 반환
+출력: Uint8Array 반환
 */
 
 function nTimesHash(srcData, n) {
-    let hashSum = hash.arrayBuffer(srcData);
-    for (let i = 0; i < n; i++) hashSum = hash.arrayBuffer(hashSum);
+    let hashSum = hash.hash(srcData);
+    for (let i = 0; i < n; i++) hashSum = hash.hash(hashSum);
     return hashSum
 }
 
@@ -3440,14 +3581,13 @@ exports.Buffer = buffer.Buffer;
 exports.MBP = metaBufferPack;
 exports.base64js = base64Js;
 exports.buf2hex = buf2hex;
-exports.decoder = decoder;
+exports.decrypt = decrypt;
 exports.decryptMsg = decryptMsg;
 exports.decryptMsgPack = decryptMsgPack;
-exports.encoder = encoder;
+exports.encrypt = encrypt;
 exports.encryptMsg = encryptMsg;
 exports.encryptMsgPack = encryptMsgPack;
 exports.equal = equal;
 exports.nTimesHash = nTimesHash;
 exports.sha256 = hash;
-exports.webCryptoTest = webCryptoTest;
 exports.xotp = xotp;
