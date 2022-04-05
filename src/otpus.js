@@ -1,40 +1,8 @@
-// import { sha256 } from './otpus-sha256.js'
-// import { MBP, Buffer } from 'meta-buffer-pack'
-// import base64js from 'base64-js'
-// import { webcrypto } from 'crypto'
-
 import { sha256, base64js, MBP, Buffer, webCrypto, webCryptoTest, printHashPerformance, getHashSpeed } from './otpus-util.js'
 export { sha256, base64js, MBP, Buffer, webCrypto, webCryptoTest, printHashPerformance }
 
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
-
-// export let webCrypto;
-
-// let isNode = false
-// try {
-//     isNode = Object.prototype.toString.call(global.process) === '[object process]'
-// } catch (e) { }
-
-// try {
-//     if (isNode) {
-//         console.log('# node.js env:')  
-//         webCrypto = webcrypto;
-//         webCryptoTest();
-//     } else if (typeof importScripts === 'function') {
-//         webCrypto = self.crypto
-//         console.log('# Web Worker env')
-//         webCryptoTest();
-//     } else if (typeof document !== 'undefined') {
-//         webCrypto = window.crypto
-//         console.log('# browser env')
-//         webCryptoTest();
-//     }
-
-// } catch (error) {
-//     console.log('webCrypto err: ', error)
-// }
-
 
 
 export function xotp(data, otpKey32Bytes, otpStartIndex = 0, shareDataBuffer = false) {
