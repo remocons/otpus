@@ -1,3 +1,4 @@
+import replace from '@rollup/plugin-replace'
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import { terser } from 'rollup-plugin-terser'
@@ -12,18 +13,22 @@ export default [
         file: pkg.browseriife,
         format: 'iife',
         sourcemap: true
-    	},
-      {  
+      },
+      {
         file: pkg.browser,
-        format: 'es', 
-        name: 'otpus',
-        sourcemap: true  
+        format: 'es',
+        sourcemap: true
       }
     ],
     plugins: [
+      replace({
+        crypto: '',
+        delimiters: ['import { webcrypto } from \'', '\''],
+        preventAssignment: true
+      }),
       resolve(),
-      commonjs() 
-      ,terser()
+      commonjs()
+      , terser()
     ]
   },
 
@@ -33,6 +38,10 @@ export default [
       { file: pkg.cjs, format: 'cjs' },
       { file: pkg.esm, format: 'es' }
     ],
-  	plugins: [resolve(), commonjs()]
+    plugins: [
+      resolve(),
+      commonjs()
+      , terser()
+    ]
   }
 ]

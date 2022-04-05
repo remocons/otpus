@@ -9,7 +9,6 @@ let hmac = sha256.hmac( key, msg)
 
 
 prn( 'msg', MBP.hex( enc) )
-prn( 'msg', MBP.hex( enc) )
 prn( 'sum', MBP.hex( sum ) )
 prn( 'hmac', MBP.hex(  hmac) )
 

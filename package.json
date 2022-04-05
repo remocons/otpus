@@ -13,7 +13,8 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "dev": "rollup -c -w"
+    "dev": "rollup -c -w",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.1.0",
+    "@rollup/plugin-replace": "^4.0.0",
     "rollup": "^2.36.2",
     "rollup-plugin-terser": "^7.0.2"
   },
