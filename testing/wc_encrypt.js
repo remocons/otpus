@@ -24,8 +24,7 @@ const rawKey = otpus.RAND( 32 )
 //1. AES_GCM 전용 키 생성.
 
 // getGCM_KEY ( keyBuffer )
-const key_AES_GCM = await wc
-.importKey(
+const key_AES_GCM = await wc.importKey(
     'raw',   // 직접 생성한 버퍼로 생성가능.
     rawKey,   // Buffer Source.
     'AES-GCM',  // 암호화 방식 확정
@@ -37,8 +36,7 @@ const key_AES_GCM = await wc
 const inputBuffer = otpus.MBP.U8('aaaaaaaaaaaaaaaa')
 
 // encrytGCM  (iv , data)
-const output = await wc
-    .encrypt(
+const output = await wc.encrypt(
     { name: 'AES-GCM',  //알고리즘 지정
     iv: otpus.RAND(12) },  // iv값. 12바이트.
     key_AES_GCM,   // 전용키

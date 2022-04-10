@@ -102,7 +102,7 @@ webCrypto.subtle.digest('SHA-256', rand).then(sum => {
     let hash1 = MBP.hex(sum);
     let hash2 = sha256.hex(rand);
     if (hash1 === hash2) {
-        console.log('hash test: success. speed:' + printHashPerformance(10000))
+        // console.log('hash test: success. speed:' + printHashPerformance(10000))
     } else {
         throw new Error('diffrent hash result')
     }
