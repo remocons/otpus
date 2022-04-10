@@ -173,5 +173,12 @@ xotp( data , otpKey, 0 , true)
 
 ```
 
+### examples
+- NodeJs: inside test, testing directory.
+- Browser: example directory.
+- [online demo @github]( https://make-robot.github.io/otpus/example/)
 
+
+### license
+[MIT](LICENSE) Lee Dong Eun
 
