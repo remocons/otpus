@@ -1,5 +1,7 @@
 # otpus
 
+Cipher and tools for Node and Browser.  
+암호 구현 및 지원 도구
 ## features
 
 - Ready to development using Web Crytop API.
@@ -89,7 +91,7 @@ if( decMsg  ){ // success
 - When encryption process is fail for any reason. it will return undefined.
 - The encryption data store HMAC ( hash of message and key) info inside.
 - If calculated hmac is distmatched with stored hmac then return undefined.
-- Try this example. See the result when modify one single bit of encryption data.
+- Try this example. See the result when modify one byte of encryption data.
 
 ```js
 
@@ -100,7 +102,7 @@ const keyStr =  'this is secret key'
 
 let encPack = encryptMessage( plainText, keyStr  )
 
-encPack = broke( encPack )  //try make corrupted message. (change one bit.)
+encPack = broke( encPack )  //try make corrupted message.
 
 let decMsg = decryptMessage(encPack ,keyStr )
 
@@ -112,7 +114,7 @@ if( decMsg  ){ // success
 
 function broke( dataOrg ){
     const data = Buffer.from(dataOrg, 'base64')
-    data[10] ^= 0x01; // modify 1 bit. 
+    data[10] ^= 0x01; // modify one byte
     return data.toString('base64')
 }
 
@@ -180,5 +182,4 @@ xotp( data , otpKey, 0 , true)
 
 
 ### license
-[MIT](LICENSE) Lee Dong Eun
-
+[MIT](LICENSE)  

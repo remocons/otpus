@@ -23,7 +23,7 @@ if( decMsg  ){ // success
 
 function broke( dataOrg ){
     const data = Buffer.from(dataOrg, 'base64')
-    data[10] ^= 0x01; // modify 1 bit. 
+    data[10] ^= 0x01; // modify one byte.
     return data.toString('base64')
 }
 
