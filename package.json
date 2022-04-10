@@ -1,7 +1,7 @@
 {
   "name": "otpus",
   "version": "0.1.2",
-  "description": "pseudo otp generator & cryptography tool",
+  "description": "Cipher for Node & browser",
   "main": "src/otpus.js",
   "cjs": "dist/otpus.cjs",
   "esm": "dist/otpus.mjs",
@@ -20,7 +20,7 @@
     "type": "git",
     "url": "git+https://github.com/make-robot/otpus.git"
   },
-  "keywords": [],
+  "keywords": ["암호","crypto","encrypt","XOR","OTP","SHA","HMAC","random"],
   "bugs": {
     "url": "https://github.com/make-robot/otpus/issues"
   },
