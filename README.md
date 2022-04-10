@@ -102,7 +102,7 @@ const keyStr =  'this is secret key'
 
 let encPack = encryptMessage( plainText, keyStr  )
 
-encPack = broke( encPack )  //try make corrupted message.
+encPack = messageModification( encPack) //try make corrupted message.
 
 let decMsg = decryptMessage(encPack ,keyStr )
 
@@ -112,7 +112,7 @@ if( decMsg  ){ // success
     prn('wrong data')
 }
 
-function broke( dataOrg ){
+function messageModification( dataOrg ){
     const data = Buffer.from(dataOrg, 'base64')
     data[10] ^= 0x01; // modify one byte
     return data.toString('base64')

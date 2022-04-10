@@ -9,7 +9,7 @@ let encPack = encryptMessage( plainText, keyStr  )
 
 prn( 'encMsg: A', encPack )
 
-// encPack = broke( encPack )
+// encPack = messageModification( encPack )
 
 let decMsg = decryptMessage(encPack ,keyStr )
 
@@ -21,7 +21,7 @@ if( decMsg  ){ // success
 }
 
 
-function broke( dataOrg ){
+function messageModification( dataOrg ){
     const data = Buffer.from(dataOrg, 'base64')
     data[10] ^= 0x01; // modify one byte.
     return data.toString('base64')
