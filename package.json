@@ -1,6 +1,6 @@
 {
   "name": "otpus",
-  "version": "0.1.0",
+  "version": "v0.1.0",
   "description": "pseudo otp generator & cryptography tool",
   "main": "src/otpus.js",
   "cjs": "dist/otpus.cjs",
