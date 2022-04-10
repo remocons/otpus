@@ -1,8 +1,6 @@
 import { sha256, base64js, MBP, Buffer, webCrypto, webCryptoTest, printHashPerformance, getHashSpeed } from './otpus-util.js'
 export { sha256, base64js, MBP, Buffer, webCrypto , webCryptoTest, printHashPerformance }
 
-export const wc = webCrypto.subtle
-
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 

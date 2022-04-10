@@ -1,6 +1,6 @@
 import * as otpus from "../src/otpus.js";
 
-const wc = otpus.wc
+const wc = otpus.webCrypto.subtle
 const sha256 = otpus.sha256
 
 /*

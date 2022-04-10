@@ -5,12 +5,13 @@
 - Ready to development using Web Crytop API.
     - Isomorphic Web Crypto Name Reference(Node and Browser)
     - NodeJS and Browser use different namespace.
-    - use 'webCrypto' ( alias wc ) from otpus.
+    - You can use isomorphic name of 'webCrypto' from otpus.
 - xotp() 
     - cipher function. based XOR with Secure Hash based Pseudo OTP.
 - encryptMessage() 
     - simple but strong enough text message encryption.(`!!!use stong passphrase`)
     - recersive hash sum with salt.(like PBKDF2)
+        - default. 1024 times accumulate hash sum.
     - random message size.(hide real message size.)
     - HMAC support. (detect corrupted message.)
     - output base64 string.  
