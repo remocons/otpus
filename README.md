@@ -112,7 +112,7 @@ if( decMsg  ){ // success
 ### example 2.  decryptMessage() corruption check 
 - When encryption process is fail for any reason. it will return undefined.
 - The encryption data store HMAC ( hash of message and key) info inside.
-- If calculated hmac is distmatched with stored hmac then return undefined.
+- If calculated hmac is dismatched with stored hmac then return undefined.
 - Try this example. See the result when modify one byte of encryption data.
 
 ```js
