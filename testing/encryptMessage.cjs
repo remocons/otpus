@@ -1,7 +1,5 @@
-// import {  encryptMessage, decryptMessage } from '../src/otpus.js'
-import {  encryptMessage, decryptMessage } from 'otpus'
-   
- 
+const {encryptMessage, decryptMessage, xotp } = require("otpus")
+
 const plainText = 'this is sercret message'
 const keyStr =  'this is secret key'
 

@@ -8,8 +8,9 @@
   "browser": "dist/otpus.esm.js",
   "browseriife": "dist/otpus.min.js",
   "type": "module",
-  "directories": {
-    "lib": "lib"
+  "exports": {
+    "import": "./src/otpus.js",
+    "require": "./dist/otpus.cjs"
   },
   "scripts": {
     "build": "rollup -c",

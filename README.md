@@ -45,19 +45,44 @@ npm i otpus
 
 ```
 
-### encrytMessage()
+### loading module
+- bundled modules is inside dist folder.
 ```js
-encrytMessage( data: string , key: string ) : string
+// browser IIFE in html
+<script src="../dist/otpus.min.js"></script>
+
+// browser ESM.  don't forget the fullpath and file extension.
+import {encryptMessage, decryptMessage, xotp } from "../path/otpus.esm.js"
+
+// NodeJS ESM
+import {encryptMessage, decryptMessage, xotp } from "otpus"
+
+// NodeJS CJS
+// tip. if your pacakage.json using "module" type, you should use *.cjs file extension.
+const {encryptMessage, decryptMessage, xotp } = require("otpus")
+
 ```
-General purpose simple text message encrytion.  (no strict)
+
+### encryptMessage()
+```js
+encryptMessage( data: String , key: String ) : String
+```
+General purpose simple text message encrytion. 
 - data: Any UTF8 text string 
 - key: Any UTF8 tex string. (any size)
 - output: encrytped and encoded base64 string.
 
+### decryptMessage()
 ```js
-encryptMessage( data: string, key: string )
+decryptMessage( data: String, key: String ) : String
 
 ```
+- data: base64 ecoded string data
+- key: same with encryptMessage
+- output: plain text
+
+
+### example 1. normal
 
 ```js
 
@@ -75,19 +100,16 @@ let encPack = encryptMessage( plainText, keyStr  )
 
 let decMsg = decryptMessage(encPack ,keyStr )
 
-
 if( decMsg  ){ // success
     // decMsg === 'this is sercret message'
 }else{ 
     // decMsg === undefined  when fail. 
 }
 
-
-
 ```
 
 
-### decryptMessage() corruption check 
+### example 2.  decryptMessage() corruption check 
 - When encryption process is fail for any reason. it will return undefined.
 - The encryption data store HMAC ( hash of message and key) info inside.
 - If calculated hmac is distmatched with stored hmac then return undefined.
@@ -135,7 +157,7 @@ xotp( data: Uint8Array, otpKey32Bytes: Uint8Array, otpSartIndex = 0:Number, shar
 This function is base cipher algorithm for otpus.( using XOR and Pseudo OTP.)  You can make other encryption function( like encyptMessage) using this function.
 - used for encryption and decryption same.
 - data: Uint8Array only.
-- key: 32bytes Uint8Array only.
+- key: 32bytes Uint8Array only. 
 - otpStartIndex: Number( 0 ~ 2**32-1.) default. 0
 - shareDataBuff: `important`
     - false: return new buffer. default.
@@ -155,11 +177,11 @@ let data = MBP.U8( msgStr )
 // MBP.U8(): parse any type of data into Uint8Array 
 
 
-// 1. shareDataBuffer is false. 
+// use case 1. shareDataBuffer is false. 
 let enc = xotp( data ,otpKey, 0 )  // false default.
 let dec = xotp( enc , otpKey, 0 ) 
 
-// 2. shareDataBuffer is true.
+// use case 2. shareDataBuffer is true.
 let encShare = xotp( data ,otpKey, 0 , true)  
 // encShare & data is referece same arrayBuffer.
 
@@ -168,9 +190,9 @@ let encShare = xotp( data ,otpKey, 0 , true)
 
 // data before encryption.
 xotp( data , otpKey, 0, true)
-// now data is changed(encrypted | decrypted)
+// now input data is changed.  
 xotp( data , otpKey, 0 , true)
-// now decrypted.
+// now data is decrypted.
 
 
 ```
