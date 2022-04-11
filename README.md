@@ -183,7 +183,7 @@ let dec = xotp( enc , otpKey, 0 )
 
 // use case 2. shareDataBuffer is true.
 let encShare = xotp( data ,otpKey, 0 , true)  
-// encShare & data is referece same arrayBuffer.
+// encShare & data is reference of same arrayBuffer.
 
 // when shareOption is true.
 // no return value needed. ( same below.)
