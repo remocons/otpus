@@ -162,7 +162,7 @@ export function equal(buf1, buf2) {
 
 
 /**
- * ( simplifed PBKDF2 )
+ * ( simplified PBKDF2 )
  * @param {String | Uint8Array } srcData  *input: key + salt(rand) together. (support string.)
  * @param {Number} n how much repeat hash
  * @returns hash32bytes : Uint8Array
