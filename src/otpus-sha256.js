@@ -13,5 +13,4 @@ sha256.hmac = function (key, data) {
   return hmac(MBP.U8(key), MBP.U8(data))
 }
 
-
 export { sha256 }

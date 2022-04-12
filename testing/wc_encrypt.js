@@ -1,4 +1,4 @@
-import { webCrypto, sha256 ,RAND , MBP , hexlog }from "../src/otpus.js";
+import { webCrypto, sha256, RAND, MBP, hexlog } from "../src/otpus.js";
 
 const wc = webCrypto.subtle
 
@@ -98,7 +98,7 @@ building cryptoKey.
 //     })
 //   }
 
-  
+
 /**
  * general purpose encryption. 
  * using WebCrypto API. 
@@ -112,23 +112,22 @@ building cryptoKey.
  * @param {Stinrg | Uint8Array} data 
  * @param {String} passPhrase 
  * @param {Number} iterations default 10000. for PBKDF2
- * @returns bufferPack : Buffer( Node's Buffer is subclass of Uint8Array)
+ * @returns {Promise} bufferPack (will return when fulfilled)  
+ * bufferPack is Buffer( subclass of Uint8Array)
  */
-async function encrypt( data , passPhrase , iterations = 10000 ) {
+async function encrypt(data, passPhrase, iterations = 10000) {
 
-  // INFO. otpus.RAND(size) is shortcut of getRandomValues( new Uint8Array(size) )
-
-  const isString = ( typeof data === 'string') // hint for unpack.   
+  const isString = (typeof data === 'string') // hint for unpack.   
   const salt = RAND(16)  // at least 16Bytes  https://developer.mozilla.org/en-US/docs/Web/API/Pbkdf2Params
   const iv = RAND(12) // recommended 12Bytes https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams
+  // otpus.RAND(size) is shortcut of getRandomValues( new Uint8Array(size) )
 
-
-  const rawKey  = await wc.importKey(
-    "raw", 
-    MBP.U8( passPhrase ),  // MBP.U8() return Uint8Array for any data types.  ex. string -> return encoded(UTF8)     
-    {name: "PBKDF2"}, 
-    false, 
-    [ "deriveKey"]
+  const rawKey = await wc.importKey(
+    "raw",
+    MBP.U8(passPhrase),  // MBP.U8() return Uint8Array for any data types.  ex. string -> return encoded(UTF8)     
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
   );
 
   const key = await wc.deriveKey(
@@ -139,9 +138,9 @@ async function encrypt( data , passPhrase , iterations = 10000 ) {
       "hash": "SHA-256"
     },
     rawKey,
-    { "name": "AES-GCM", "length": 256},
+    { "name": "AES-GCM", "length": 256 },
     true,
-    [ "encrypt", "decrypt" ]
+    ["encrypt", "decrypt"]
   );
 
   const encData = await wc.encrypt(
@@ -158,11 +157,11 @@ async function encrypt( data , passPhrase , iterations = 10000 ) {
   // hexlog('encData',encData )
 
   return MBP.pack(
-      MBP.MB('encData', encData ),
-      MBP.MB('iv', iv),
-      MBP.MB('salt', salt ),
-      MBP.MB('iterations', iterations ),
-      MBP.MB('isString', isString )
+    MBP.MB('encData', encData),
+    MBP.MB('iv', iv),
+    MBP.MB('salt', salt),
+    MBP.MB('iterations', iterations),
+    MBP.MB('isString', isString)
   )
 
 }
@@ -170,17 +169,17 @@ async function encrypt( data , passPhrase , iterations = 10000 ) {
 
 
 
-async function decrypt( encPack , passPhrase ) {
+async function decrypt(encPack, passPhrase) {
 
-  const pack = MBP.unpack( encPack )
-  console.log( 'isString', pack.isString )
+  const pack = MBP.unpack(encPack)
+  console.log('isString', pack.isString)
 
-  const rawKey  = await wc.importKey(
-    "raw", 
-    MBP.U8( passPhrase ),   
-    {name: "PBKDF2"}, 
-    false, 
-    [ "deriveKey"]
+  const rawKey = await wc.importKey(
+    "raw",
+    MBP.U8(passPhrase),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
   );
 
   const key = await wc.deriveKey(
@@ -191,9 +190,9 @@ async function decrypt( encPack , passPhrase ) {
       "hash": "SHA-256"
     },
     rawKey,
-    { "name": "AES-GCM", "length": 256},
+    { "name": "AES-GCM", "length": 256 },
     true,
-    [ "encrypt", "decrypt" ]
+    ["encrypt", "decrypt"]
   );
 
   const decData = await wc.decrypt(
@@ -206,29 +205,50 @@ async function decrypt( encPack , passPhrase ) {
   );
 
 
-    if( pack.isString){
-      return new TextDecoder().decode( decData )
-    }
+  if (pack.isString) {
+    return new TextDecoder().decode(decData)
+  }
 
-    return decData   
+  return decData
 
 }
 
 
 
 const plainText = 'this is secret message.'
-const encPack = await encrypt( plainText, 'passPhrase',10000)
-const decodeMessage = await decrypt( encPack , 'passPhrase')
+const encPack = await encrypt(plainText, 'passPhrase', 10000)
+const decodeMessage = await decrypt(encPack, 'passPhrase')
 
 console.log('decrypted:', decodeMessage)
 
 
-const plainData = Buffer.alloc(100 * 2**20)
-const encData = await encrypt( plainData, 'passPhrase',10000)
-const decData = await decrypt( encData , 'passPhrase')
+const plainData = Buffer.alloc(100 * 2 ** 20)
+const encData = await encrypt(plainData, 'passPhrase', 10000)
+const decData = await decrypt(encData, 'passPhrase')
 
-const some = decData.slice(0,16)
-console.log('decrypted:', some )
+const some = decData.slice(0, 16)
+console.log('decrypted:', some)
 console.log('decrypted:', decData.byteLength)
 
+const key = 'key'
+const strData = 'hello world     '
 
+encrypt(strData, key)
+  .then(secretPack => {
+    console.log('secretPack', secretPack.byteLength)
+    return decrypt(secretPack, key)
+  })
+  .then(data => {
+    console.log('decoded string message: ', data)
+  })
+
+
+const binaryData = Uint8Array.from([1, 2, 3, 4,5,6])
+encrypt(binaryData, key)
+  .then(secretPack => {
+    console.log('secretPack', secretPack.byteLength)
+    return decrypt(secretPack, key)
+  })
+  .then(data => {
+    console.log('decoded binary data: ', data)
+  })
