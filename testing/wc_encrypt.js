@@ -117,7 +117,7 @@ building cryptoKey.
  */
 async function encrypt(data, passPhrase, iterations = 10000) {
 
-  const isString = (typeof data === 'string') // hint for unpack.   
+  // const isString = (typeof data === 'string') // hint for unpack.   
   const salt = RAND(16)  // at least 16Bytes  https://developer.mozilla.org/en-US/docs/Web/API/Pbkdf2Params
   const iv = RAND(12) // recommended 12Bytes https://developer.mozilla.org/en-US/docs/Web/API/AesGcmParams
   // otpus.RAND(size) is shortcut of getRandomValues( new Uint8Array(size) )
@@ -143,25 +143,30 @@ async function encrypt(data, passPhrase, iterations = 10000) {
     ["encrypt", "decrypt"]
   );
 
+  const randSize = parseInt( RAND(1)[0] / 4 );  // 0~63
+  const randBuffer = RAND( randSize )
+
+  // To hide real data size   
+  // [ random size of buffer with random values + real data buffer ]
+  const randomSizeDataPack = MBP.pack(
+    MBP.MB('#randBuffer', randBuffer ),
+    MBP.MB('realData', data)
+  )
+
   const encData = await wc.encrypt(
     {
       name: "AES-GCM",
       iv: iv
     },
     key,
-    data
+    randomSizeDataPack
   );
-
-  // hexlog('salt',salt)
-  // hexlog('iv',iv)
-  // hexlog('encData',encData )
 
   return MBP.pack(
     MBP.MB('encData', encData),
     MBP.MB('iv', iv),
     MBP.MB('salt', salt),
-    MBP.MB('iterations', iterations),
-    MBP.MB('isString', isString)
+    MBP.MB('iterations', iterations)
   )
 
 }
@@ -172,8 +177,6 @@ async function encrypt(data, passPhrase, iterations = 10000) {
 async function decrypt(encPack, passPhrase) {
 
   const pack = MBP.unpack(encPack)
-  console.log('isString', pack.isString)
-
   const rawKey = await wc.importKey(
     "raw",
     MBP.U8(passPhrase),
@@ -195,7 +198,7 @@ async function decrypt(encPack, passPhrase) {
     ["encrypt", "decrypt"]
   );
 
-  const decData = await wc.decrypt(
+  const randomSizeDataPack = await wc.decrypt(
     {
       name: "AES-GCM",
       iv: pack.iv
@@ -204,12 +207,20 @@ async function decrypt(encPack, passPhrase) {
     pack.encData
   );
 
+  const innerPack = MBP.unpack( randomSizeDataPack )
 
-  if (pack.isString) {
-    return new TextDecoder().decode(decData)
-  }
+  // Notice.  specicial feature of MBP.
+  // when MBP.pack() store the meta-buffer  data type together.  
+  // then MBP.unpack() use the information.
+  
+  // return data type is depend on input data for encrypt()
 
-  return decData
+  // data type of return value  is same with input data type of encrypt(data:Type,,,) function.
+  
+  // encrypt( data:String,,, )      => pack =>  decrypt(pack,,) : String
+  // encrypt( data:Uint8Array,,, )  => pack =>  decrypt(pack,,) : Uint8Array.
+
+  return innerPack.realData  //  String | Buffer | Object | Number 
 
 }
 
@@ -227,11 +238,11 @@ const encData = await encrypt(plainData, 'passPhrase', 10000)
 const decData = await decrypt(encData, 'passPhrase')
 
 const some = decData.slice(0, 16)
-console.log('decrypted:', some)
-console.log('decrypted:', decData.byteLength)
+console.log('decrypted: some:', some)
+console.log('decrypted: byteLength:', decData.byteLength)
 
 const key = 'key'
-const strData = 'hello world     '
+const strData = 'hello world'
 
 encrypt(strData, key)
   .then(secretPack => {
@@ -239,16 +250,18 @@ encrypt(strData, key)
     return decrypt(secretPack, key)
   })
   .then(data => {
+    console.log( 'typeof data:', typeof data)  // string 
     console.log('decoded string message: ', data)
   })
 
 
-const binaryData = Uint8Array.from([1, 2, 3, 4,5,6])
+const binaryData = Uint8Array.from([1, 2, 3, 4])
 encrypt(binaryData, key)
   .then(secretPack => {
     console.log('secretPack', secretPack.byteLength)
     return decrypt(secretPack, key)
   })
   .then(data => {
+    console.log('instanceof ArrayBuffer:', data instanceof Uint8Array )  //true
     console.log('decoded binary data: ', data)
   })
