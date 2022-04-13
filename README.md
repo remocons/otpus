@@ -2,6 +2,7 @@
 
 Cipher and tools for Node and Browser.  
 암호 구현 및 지원 도구
+
 ## features
 
 - Ready to development using Web Crytop API.
@@ -26,10 +27,31 @@ Cipher and tools for Node and Browser.
     - base64() 
     - MBP(meta buffer pack) : buffer pack tool.
 
-## support
+
+## Table of Contents
+
+- [Support](#Support)
+- [Usage](#Usage)
+    - [Installing](#Installing)
+    - [Loading Module](#Loading-Module)
+- [Sync functions](#)
+    - [EncryptMessage() ](#encryptMessage )
+    - [Encoded data](#Encoded-data)
+    - [decryptMessage()](#decryptMessage())
+    - [corruption check](corruption-check)
+    - [xotp()](#xotp())
+- [Async functions using WebCrypto API](#Async-functions-using-WebCrypto-API)
+    - [encrypt()](#encrypt())
+    - [decrypt()](#decrypt())
+    - [Handling buffer](#Handling-buffer)
+    - [Error catch](#Error-catch)
+- [Examples](#Examples)
+
+
+## Support
 You can use modern ESM style or Legacy CJS, IIFE style both.
 - NodeJS: 
-    - ESM: dist/otpus.mjs (bundle version.)
+    - ESM: dist/otpus.mjs (bundled version.)
     - CommonJS: dist/otpus.cjs
 - Browser:
     - ESM: dist/otpus.esm.js
@@ -38,15 +60,15 @@ You can use modern ESM style or Legacy CJS, IIFE style both.
 
 ## Usage
 
-### install
+### Installing
 
 ```js
 npm i otpus
 
 ```
 
-### loading module
-- bundled modules is inside dist folder.
+### Loading module
+
 ```js
 // browser IIFE in html
 <script src="../dist/otpus.min.js"></script>
@@ -82,11 +104,15 @@ decryptMessage( data: String, key: String ) : String
 - output: plain text
 
 
-### example 1. normal
+### Encoded data
+
+- encryptMessage() return base64 string data. 
+- If you need buffer data. use Buffer.from( base64Msg, 'base64' ) method.
+- or reverse command:  buffer.toString('base64')
 
 ```js
 
-import {  encryptMessage, decryptMessage } from 'otpus'
+import {  encryptMessage, decryptMessage , Buffer } from 'otpus'
    
 const plainText = 'this is sercret message'
 const keyStr =  'this is secret key'
@@ -94,9 +120,17 @@ const keyStr =  'this is secret key'
 let encPack = encryptMessage( plainText, keyStr  )
 
 // now encPack is encrypted & base64 encoded string.
-// sX7SStdL/pF7umBBEJ7EKXuv7QYLflCe3vy9F+XEayQVfAVa3PoZ1UasXl
-//... SxbIm5Qb3dlciIsIjgiLDE0OF1dAE8=
-// return data is always change.  and size is not fixed.
+/*  random size.
+sX7SStdL/pF7umBBEJ7EKXuv7QYLflCe3vy9F+XEayQVfAVa3PoZ1UasXl
+... SxbIm5Qb3dlciIsIjgiLDE0OF1dAE8=
+*/
+
+
+// if you need buffer data.
+const encBuffer = Buffer.from( encPack , 'base64' )
+// or reverse transformation ( from buffer to base64) also avaiable. 
+const base64Pack = encBuffer.toString('base64')
+
 
 let decMsg = decryptMessage(encPack ,keyStr )
 
@@ -109,7 +143,8 @@ if( decMsg  ){ // success
 ```
 
 
-### example 2.  decryptMessage() corruption check 
+### decryptMessage() 
+### corruption check 
 - When encryption process is fail for any reason. it will return undefined.
 - The encryption data store HMAC ( hash of message and key) info inside.
 - If calculated hmac is dismatched with stored hmac then return undefined.
@@ -129,9 +164,9 @@ encPack = messageModification( encPack) //try make corrupted message.
 let decMsg = decryptMessage(encPack ,keyStr )
 
 if( decMsg  ){ // success
-    prn( 'decMsg:', decMsg )
+    console.log( 'decMsg:', decMsg )
 }else{ // return undefined  when fail. 
-    prn('wrong data')
+    console.log('wrong data')
 }
 
 function messageModification( dataOrg ){
@@ -140,22 +175,19 @@ function messageModification( dataOrg ){
     return data.toString('base64')
 }
 
-
-function prn(...args){ 
-    console.log(...args)
-}
-
-
 ```
 
 
 ### xotp()
+
+This function is base cipher algorithm for otpus.( using XOR and Pseudo OTP.)  You can make other encryption function( like encyptMessage) using this function.
+
 ```js
+
 xotp( data: Uint8Array, otpKey32Bytes: Uint8Array, otpSartIndex = 0:Number, shareDataBuffer = false : boolean) : Uint8Array
 
 ```
-This function is base cipher algorithm for otpus.( using XOR and Pseudo OTP.)  You can make other encryption function( like encyptMessage) using this function.
-- used for encryption and decryption same.
+- used for encryption and decryption both.
 - data: Uint8Array only.
 - key: 32bytes Uint8Array only. 
 - otpStartIndex: Number( 0 ~ 2**32-1.) default. 0
@@ -166,6 +198,7 @@ This function is base cipher algorithm for otpus.( using XOR and Pseudo OTP.)  Y
         - recommended for the large data. 
 
 ```js
+
 import { MBP, sha256, xotp  } from 'otpus'
    
 const msgStr = 'aaaaaaaaaaaa'   
@@ -197,12 +230,12 @@ xotp( data , otpKey, 0 , true)
 
 ```
 
-## Using Web Crypto API
+## Async functions using WebCrypto API
 
 **Secure context**: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers.  
 **Node.js**: The Web Cryptography API implementation has landed as an experimental feature in Node.js 15.0.0.( current status: Stability: 1 - Experimental.)
 
-### otpus.encrypt()
+### encrypt()
 
 otpus's general purpose encryption implement using Web Crypto API.
 
@@ -233,7 +266,7 @@ otpus's general purpose encryption implement using Web Crypto API.
 
   
 
-### otpus.decrypt()
+### decrypt()
 
 ```js
   decrypt(data:Uint8Array , passPhrase: any  ) decodeData: Promise 
@@ -295,35 +328,70 @@ encrypt(binaryData, key)
 
 
 ```
+### Error catch
 
-### handling encryption data ( bufferPack )
-
-result of encrypt() data is Buffer. 
+For many reason encryption process could be fail.
+You should use try, catch statements.
 
 ```js
-// It's Uint8Array.
+//  await style
+try{
+    const secretPack = await encrypt('plain text','key')
+    const decoded = await decrypt( secretPack,'key')
+    console.log('decoded:', decoded)
+}catch(error){
+    console.log(error)
+}
 
-// It has some utility methodes.
+// Promise style
+encrypt('plain text','key')
+    .then( secretPack => decrypt(secretPack, 'key' ) )
+    .then( decoded => console.log( decoded ))
+    .catch( error=>{
+        console.log(error)
+    })
 
-// case 1. If you need base64 string.
+```
 
-const secretBase64 = bufferPack.toString('base64')
-// now secreBase64 is String.
+### Handling buffer
 
+result of encrypt() data is an buffer( meta-buffer-pack). 
 
+```js
 
+import{ encrypt, decrypt, MBP } from 'otpus'
 
+const secretPack = await encrypt('data','key')
+
+// secretPack is Buffer ( subclass of Uint8Array)
+console.log( secretPack instanceof Uint8Array ) 
+//  true 
+
+// If you need base64 string data. 
+const base64Pack = secretPack.toString('base64')
+console.log( 'base64 data:', base64Pack ) 
+
+/*
+base64 data: F59Pyfq8EOSVSprdvbI2U+46JGtpcQ0sa3W2YtGRBxdJTdT41GY6a+FfBIvT4byChSu1KTGP1PJXewTidfeN1dgQh2IAe+eB2f/Df64kBXdr7HcvMFbawu2tOuUzUsonluKK25J5ilUtpuF2qszf9DEwMDAwW1siZW5jRGF0YSIsIkIiLDAsODRdLFsiaXYiLCJCIiw4NCwxMl0sWyJzYWx0IiwiQiIsOTYsMTZdLFsiaXRlcmF0aW9ucyIsIk4iLDExMiw1XV0AUw==
+*/
+
+// secretPack is meta-buffer-pack of MBP.
+// You can use  MBP.unpack() to check public information like iv , salt.
+cosnt secretObject = MBP.unpack( secretPack )
+console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
+
+// salt: <Buffer 96 e2 8a db 92 79 8a 55 2d a6 e1 76 aa cc df f4>
 
 
 ```
 
 
 
-### examples
+### Examples
 - NodeJs: inside test, testing directory.
 - Browser: example directory.
 - [online demo @github]( https://make-robot.github.io/otpus/example/)
 
 
 ### license
-[MIT](LICENSE)  
+[MIT](LICENSE)  Lee Dong Eun 이동은 ( sixgen@gmail.com)

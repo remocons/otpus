@@ -96,6 +96,17 @@ encrypt(binaryData, key)
   console.log('ESM: decrypted: show some:', some)
 
 
+  // error catch
+  try{
+    const secretPack = await encrypt('plain text','key')
+    const decoded = await decrypt( secretPack,'key')
+    console.log('try catch. no error. decoded:', decoded)
+  }catch(error){
+      console.log(error)
+  }
+
+
+
   evalBtn.addEventListener('click', e => {
     // console.log(code.value)
     result.innerHTML = ''
