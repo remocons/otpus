@@ -5,27 +5,36 @@ Cipher and tools for Node and Browser.
 
 ## features
 
-- Ready to development using Web Crytop API.
+- Ready to development using Web Crypto API.
     - Isomorphic Web Crypto Name Reference(Node and Browser)
-    - NodeJS and Browser use different namespace.
-    - You can use isomorphic name of 'webCrypto' from otpus.
-- xotp() 
-    - cipher function. based XOR with Secure Hash based Pseudo OTP.
-- encryptMessage() 
-    - simple but strong enough text message encryption.(`!!!use stong passphrase`)
-    - recersive hash sum with salt.(like PBKDF2)
-        - default. 1024 times accumulate hash sum.
-    - random message size.(hide real message size.)
-    - HMAC support. (detect corrupted message.)
-    - output base64 string.  
-- decryptMessage()
-    - receive base64 encoded message.
-    - return plain text.
-    - return undefined. ( for corrupted message)
+    - You can use isomorphic reference name of 'webCrypto' from otpus.
+    - Node.js and Browser use different namespace.
+- WebCrypto API based general purpose async style encryption functions
+    - algorithm: AES-GCM, PBKDF2.
+    - encrypt() : support any type of data and key.  
+    - `random data size`
+    - secret buffer pack ( meta buffer pack )
+    - decrypt() : return `origin data type`.( thanks to the special feature of MBP)
+- pure otpus 
+    - xotp() 
+        - cipher function. based XOR and Pseudo OTP.
+    - encryptMessage() 
+        - simple but strong enough text message encryption.(`!!!use stong passphrase`)
+        - recersive hash sum with salt.(like PBKDF2)
+            - default. 1024 times accumulate hash sum.
+        - `random data size`.(hide real message size.)
+        - HMAC support. (detect corrupted message.)
+        - output base64 string.  
+    - decryptMessage()
+        - receive base64 encoded message.
+        - return plain text.
+        - return undefined. ( for corrupted message)
 - include:
     - SHA256() ,HMAC()  ( sync type )
     - base64() 
-    - MBP(meta buffer pack) : buffer pack tool.
+    - `MBP`(meta buffer pack) : buffer pack tool.
+
+
 
 
 ## Table of Contents
@@ -34,7 +43,7 @@ Cipher and tools for Node and Browser.
 - [Usage](#Usage)
     - [Installing](#Installing)
     - [Loading Module](#Loading-Module)
-- [Sync functions](#)
+- [Sync functions](#Sync-functions)
     - [EncryptMessage() ](#encryptMessage )
     - [Encoded data](#Encoded-data)
     - [decryptMessage()](#decryptMessage())
@@ -46,6 +55,7 @@ Cipher and tools for Node and Browser.
     - [Handling buffer](#Handling-buffer)
     - [Error catch](#Error-catch)
 - [Examples](#Examples)
+- [License](#License)
 
 
 ## Support
@@ -56,7 +66,6 @@ You can use modern ESM style or Legacy CJS, IIFE style both.
 - Browser:
     - ESM: dist/otpus.esm.js
     - IIFE: dist/otpus.min.js
-
 
 ## Usage
 
@@ -84,6 +93,8 @@ import {encryptMessage, decryptMessage, xotp } from "otpus"
 const {encryptMessage, decryptMessage, xotp } = require("otpus")
 
 ```
+
+### Sync functions
 
 ### encryptMessage()
 ```js
@@ -240,7 +251,7 @@ xotp( data , otpKey, 0 , true)
 otpus's general purpose encryption implement using Web Crypto API.
 
  features:
-- any type of data
+- any type of data.
 - any type of key( passPhrase).
 - result of decryption data will be same data type of origin data.
 - randomize data size. (to hide real message size)
@@ -252,7 +263,7 @@ otpus's general purpose encryption implement using Web Crypto API.
 - data packaging:  MBP(meta-buffer-pack)  https://github.com/make-robot/meta-buffer-pack
   
 ```js
-  encrypt(data:any , passPhrase: any ,iterations:Number = 10000 ) bufferPack: Promise 
+  encrypt( data: any , passPhrase: any ,iterations: Number = 10000 ) bufferPack: Promise
 ```
  - async version of otpus.encrytMessage() 
     - available: promise chaining, async await.
@@ -326,7 +337,6 @@ encrypt(binaryData, key)
     console.log('decoded binary data: ', data)
   })
 
-
 ```
 ### Error catch
 
@@ -382,7 +392,6 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 
 // salt: <Buffer 96 e2 8a db 92 79 8a 55 2d a6 e1 76 aa cc df f4>
 
-
 ```
 
 
@@ -390,8 +399,8 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 ### Examples
 - NodeJs: inside test, testing directory.
 - Browser: example directory.
-- [online demo @github]( https://make-robot.github.io/otpus/example/)
+- [Online demo @github]( https://make-robot.github.io/otpus/example/)
 
 
-### license
-[MIT](LICENSE)  Lee Dong Eun 이동은 ( sixgen@gmail.com)
+### License
+[MIT](LICENSE)  이동은 ( Lee Dong Eun ) sixgen@gmail.com 

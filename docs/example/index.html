@@ -12,7 +12,8 @@
       font-family: Verdana, Geneva, Tahoma, sans-serif;
       line-height: 1.5rem;
     }
-    button{
+
+    button {
       padding: 15px;
       font-size: 1.5em;
     }
@@ -21,10 +22,12 @@
 </head>
 
 <body>
-  
+
   <div><button id="evalBtn">EVAL</button></div>
   <textarea class='code' id="code" cols="30" rows="10" spellcheck="false">
-//pure otpus  
+/*
+ * pure sync type otpus encryption 
+ */
     let msg = 'this is top secret message';
     let key = 'this is a secret key';
     let encoded = otpus.encryptMessage( msg, key );
@@ -34,27 +37,32 @@
     let decoded = otpus.decryptMessage( encoded , key )
     prn('decoded', decoded)
 
-// otpus encryption using Web Crypto API
+
+/*
+ * async type otpus encryption using Web Crypto API
+ */
+
 const Buffer = otpus.Buffer 
 const MBP = otpus.MBP
 const encrypt = otpus.encrypt 
 const decrypt = otpus.decrypt 
 
-
+// case1. string data 
 const strData = 'hello world'
-
 encrypt(strData, key)
   .then(secretPack => {
     prn('random secretPack size', secretPack.byteLength)
     return decrypt(secretPack, key)
   })
   .then(data => {
-    prn('return data type is type of originData:', typeof data , 'string')
+    prn('return data type is type of originData', typeof data ) // string
     prn('decoded string message: ', data)
   })
 
 
+// case2. binary data 
 const binaryData = Uint8Array.from([1, 2, 3, 4])
+
 encrypt(binaryData, key)
   .then(secretPack => {
     prn('random secretPack size', secretPack.byteLength)
@@ -73,11 +81,11 @@ encrypt(binaryData, key)
 
 </body>
 <script type="module">
-  import  * as otpus from '../dist/otpus.esm.js'
+  import * as otpus from '../dist/otpus.esm.js'
 
   const encrypt = otpus.encrypt
   const decrypt = otpus.decrypt
-  const Buffer = otpus.Buffer 
+  const Buffer = otpus.Buffer
 
   // ESM async await style example.
   // encryption string data.
@@ -97,12 +105,12 @@ encrypt(binaryData, key)
 
 
   // error catch
-  try{
-    const secretPack = await encrypt('plain text','key')
-    const decoded = await decrypt( secretPack,'key')
+  try {
+    const secretPack = await encrypt('plain text', 'key')
+    const decoded = await decrypt(secretPack, 'key')
     console.log('try catch. no error. decoded:', decoded)
-  }catch(error){
-      console.log(error)
+  } catch (error) {
+    console.log(error)
   }
 
 
@@ -114,12 +122,12 @@ encrypt(binaryData, key)
   })
 
   function prn(tag, v) {
-    result.innerHTML += "\n# " + tag + ": " + v 
+    result.innerHTML += "\n# " + tag + ": " + v
     console.log(v)
   }
   function prnObj(tag, v) {
-    v = JSON.stringify(v , null, 2)
-    result.innerHTML += "\n# " +tag + ": " + v 
+    v = JSON.stringify(v, null, 2)
+    result.innerHTML += "\n# " + tag + ": " + v
     console.log(v)
   }
 </script>
