@@ -1,5 +1,5 @@
 import assert from 'assert/strict'
-import { xotp, MBP, Buffer, RAND } from '../src/otpus.js'
+import { xotp, MBP, Buffer, RAND } from '../src/index.js'
 
 describe('xotp', function () {
   describe('data:', function () {

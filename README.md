@@ -197,6 +197,128 @@ xotp( data , otpKey, 0 , true)
 
 ```
 
+## Using Web Crypto API
+
+**Secure context**: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers.  
+**Node.js**: The Web Cryptography API implementation has landed as an experimental feature in Node.js 15.0.0.( current status: Stability: 1 - Experimental.)
+
+### otpus.encrypt()
+
+otpus's general purpose encryption implement using Web Crypto API.
+
+ features:
+- any type of data
+- any type of key( passPhrase).
+- result of decryption data will be same data type of origin data.
+- randomize data size. (to hide real message size)
+- Using WebCrypto API
+    - encryption algorithm:  AES-GCM  of Webcrypto API.
+        - support message authentication
+    - key generation:  PBKDF2 of WebCrypto API.
+    - salt, iv:  from getRandomValues
+- data packaging:  MBP(meta-buffer-pack)  https://github.com/make-robot/meta-buffer-pack
+  
+```js
+  encrypt(data:any , passPhrase: any ,iterations:Number = 10000 ) bufferPack: Promise 
+```
+ - async version of otpus.encrytMessage() 
+    - available: promise chaining, async await.
+ - input
+    - data {Stinrg | Uint8Array | Number | Object } 
+    - passPhrase {Stinrg | Uint8Array | Number | Object } 
+    - iterations {Number} iterations default 10000. for PBKDF2
+ - returns 
+    - Promise ( will return bufferPack when fulfilled )  
+    - bufferPack is Node.js Buffer( subclass of Uint8Array)
+
+  
+
+### otpus.decrypt()
+
+```js
+  decrypt(data:Uint8Array , passPhrase: any  ) decodeData: Promise 
+```
+ - input
+    - bufferPack(MBP pack) {Uint8Array} 
+    - passPhrase  {String | Uint8Array | any } 
+ - returns 
+    - Promise ( will return decodedData when fulfilled )
+
+
+```js
+import { encrypt, decrypt ,Buffer } from "otpus"
+
+// async await style
+const plainText = 'this is a secret message.'
+const encPack = await encrypt(plainText, 'passPhrase', 10000)
+const decodeMessage = await decrypt(encPack, 'passPhrase')
+
+console.log('decrypted:', decodeMessage)
+
+const plainData = Buffer.alloc(100 * 2 ** 20)
+const encData = await encrypt(plainData, 'passPhrase', 10000)
+const decData = await decrypt(encData, 'passPhrase')
+
+const some = decData.slice(0, 16)
+console.log('decrypted: some:', some)
+console.log('decrypted: byteLength:', decData.byteLength)
+
+const key = 'key'
+const strData = 'hello world'
+
+
+// promise chaining
+
+// string data will return string data. 
+encrypt(strData, key)
+  .then(secretPack => {
+    console.log('secretPack', secretPack.byteLength)
+    return decrypt(secretPack, key)
+  })
+  .then(data => {
+    console.log( 'typeof data:', typeof data)  // string 
+    console.log('decoded string message: ', data)
+  })
+
+
+// Uint8Array data will return Uint8Array data.
+const binaryData = Uint8Array.from([1, 2, 3, 4])
+encrypt(binaryData, key)
+  .then(secretPack => {
+    console.log('secretPack', secretPack.byteLength)
+    return decrypt(secretPack, key)
+  })
+  .then(data => {
+    console.log('instanceof ArrayBuffer:', data instanceof Uint8Array )  //true
+    console.log('decoded binary data: ', data)
+  })
+
+
+```
+
+### handling encryption data ( bufferPack )
+
+result of encrypt() data is Buffer. 
+
+```js
+// It's Uint8Array.
+
+// It has some utility methodes.
+
+// case 1. If you need base64 string.
+
+const secretBase64 = bufferPack.toString('base64')
+// now secreBase64 is String.
+
+
+
+
+
+
+```
+
+
+
 ### examples
 - NodeJs: inside test, testing directory.
 - Browser: example directory.

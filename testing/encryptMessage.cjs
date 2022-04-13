@@ -7,6 +7,7 @@ const encPack = encryptMessage(plainText, keyStr)
 
 prn('encMsg: A', encPack)
 
+// try modification
 // encPack = messageModification( encPack )
 
 const decMsg = decryptMessage(encPack, keyStr)

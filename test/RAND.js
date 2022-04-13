@@ -1,5 +1,5 @@
 import assert from 'assert/strict'
-import { RAND } from '../src/otpus.js'
+import { RAND } from '../src/index.js'
 
 describe('RAND', function () {
   describe('for number', function () {

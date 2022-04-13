@@ -2,14 +2,14 @@
   "name": "otpus",
   "version": "0.1.4",
   "description": "Cipher for Node & browser",
-  "main": "src/otpus.js",
+  "main": "src/index.js",
   "cjs": "dist/otpus.cjs",
   "esm": "dist/otpus.mjs",
   "browser": "dist/otpus.esm.js",
   "browseriife": "dist/otpus.min.js",
   "type": "module",
   "exports": {
-    "import": "./src/otpus.js",
+    "import": "./src/index.js",
     "require": "./dist/otpus.cjs"
   },
   "scripts": {

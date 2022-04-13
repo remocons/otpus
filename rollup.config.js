@@ -6,7 +6,7 @@ import pkg from './package.json'
 
 export default [
   {
-    input: 'src/otpus.js',
+    input: 'src/index.js',
     output: [
       {
         name: 'otpus',
@@ -33,7 +33,7 @@ export default [
   },
 
   {
-    input: 'src/otpus.js',
+    input: 'src/index.js',
     output: [
       { file: pkg.cjs, format: 'cjs' },
       { file: pkg.esm, format: 'es' }

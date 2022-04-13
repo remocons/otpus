@@ -1,4 +1,4 @@
-import { sha256, MBP } from '../src/otpus.js'
+import { sha256, MBP } from '../src/index.js'
 
 const msg = 'aaaaaaa'
 const key = 'passphrase'

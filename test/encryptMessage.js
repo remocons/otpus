@@ -1,5 +1,5 @@
 import assert from 'assert/strict'
-import { RAND, encryptMessage, decryptMessage } from '../src/otpus.js'
+import { RAND, encryptMessage, decryptMessage } from '../src/index.js'
 
 describe('encryptMessage', function () {
   describe('accept string data. ', function () {

@@ -1,4 +1,4 @@
-// import {  encryptMessage, decryptMessage } from '../src/otpus.js'
+// import {  encryptMessage, decryptMessage } from '../src/index.js'
 import { encryptMessage, decryptMessage } from 'otpus'
 
 const plainText = 'this is sercret message'
