@@ -30,32 +30,36 @@ Cipher and tools for Node and Browser.
         - return plain text.
         - return undefined. ( for corrupted message)
 - include:
-    - SHA256() ,HMAC()  ( sync type )
+    - SHA256() HMAC()  ( sync type )
     - base64() 
-    - `MBP`(meta buffer pack) : buffer pack tool.
+    - [`meta buffer pack`]( https://github.com/make-robot/meta-buffer-pack) : buffer packer.
 
 
 
 
 ## Table of Contents
 
-- [Support](#Support)
-- [Usage](#Usage)
-    - [Installing](#Installing)
-    - [Loading Module](#Loading-Module)
-- [Sync functions](#Sync-functions)
-    - [EncryptMessage() ](#encryptMessage )
-    - [Encoded data](#Encoded-data)
-    - [decryptMessage()](#decryptMessage())
-    - [corruption check](corruption-check)
-    - [xotp()](#xotp())
-- [Async functions using WebCrypto API](#Async-functions-using-WebCrypto-API)
-    - [encrypt()](#encrypt())
-    - [decrypt()](#decrypt())
-    - [Handling buffer](#Handling-buffer)
-    - [Error catch](#Error-catch)
-- [Examples](#Examples)
-- [License](#License)
+- [otpus](#otpus)
+  - [features](#features)
+  - [Table of Contents](#table-of-contents)
+  - [Support](#support)
+  - [Usage](#usage)
+    - [Installing](#installing)
+    - [Loading module](#loading-module)
+    - [Sync functions](#sync-functions)
+    - [encryptMessage()](#encryptmessage)
+    - [decryptMessage()](#decryptmessage)
+    - [Encoded data](#encoded-data)
+    - [decryptMessage()](#decryptmessage-1)
+    - [corruption check](#corruption-check)
+    - [xotp()](#xotp)
+  - [Async functions using WebCrypto API](#async-functions-using-webcrypto-api)
+    - [encrypt()](#encrypt)
+    - [decrypt()](#decrypt)
+    - [Error catch](#error-catch)
+    - [Handling buffer](#handling-buffer)
+    - [Examples](#examples)
+    - [License](#license)
 
 
 ## Support
@@ -100,9 +104,9 @@ const {encryptMessage, decryptMessage, xotp } = require("otpus")
 ```js
 encryptMessage( data: String , key: String ) : String
 ```
-General purpose simple text message encrytion. 
-- data: Any UTF8 text string 
-- key: Any UTF8 tex string. (any size)
+General purpose simple text message encryption. 
+- data: Any UTF8 string 
+- key: Any UTF8 string. (any size)
 - output: encrytped and encoded base64 string.
 
 ### decryptMessage()
@@ -111,7 +115,7 @@ decryptMessage( data: String, key: String ) : String
 
 ```
 - data: base64 ecoded string data
-- key: same with encryptMessage
+- key: same with encryptMessage()
 - output: plain text
 
 
@@ -260,7 +264,7 @@ otpus's general purpose encryption implement using Web Crypto API.
         - support message authentication
     - key generation:  PBKDF2 of WebCrypto API.
     - salt, iv:  from getRandomValues
-- data packaging:  MBP(meta-buffer-pack)  https://github.com/make-robot/meta-buffer-pack
+- data packaging:  MBP(meta-buffer-pack) 
   
 ```js
   encrypt( data: any , passPhrase: any ,iterations: Number = 10000 ) bufferPack: Promise
