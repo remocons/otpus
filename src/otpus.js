@@ -82,10 +82,10 @@ export function xotp(data, otpKey32Bytes, otpStartIndex = 0, shareDataBuffer = f
  *
  * @param {String} msg plainText
  * @param {String} key passPhrase
- * @param {Number} nPower keyAging factor for nTimesHash().  default 10 => 2 ** 10 => repeat hash 1024 times.
+ * @param {Number} nPower keyAging factor for nTimesHash().  default 10 => 2 ** 15 => repeat hash 32768 times.
  * @returns
  */
-export function encryptMessage(msg, key, nPower = 10) {
+export function encryptMessage(msg, key, nPower = 15) {
     if (typeof msg !== 'string') {
         throw new TypeError('msg: Use string message.')
     }
@@ -154,14 +154,19 @@ export function equal(buf1, buf2) {
 }
 
 /**
- * ( simplified PBKDF2 )
+ * Simplified PBKDF2
  * @param {String | Uint8Array } srcData  *input: key + salt(rand) together. (support string.)
  * @param {Number} n how much repeat hash
  * @returns hash32bytes : Uint8Array
  */
 export function nTimesHash(srcData, n) {
+    // console.log('n',n)
+    // const p1 = performance.now()
+
     let hashSum = sha256.hash(srcData)
     for (let i = 0; i < n; i++) hashSum = sha256.hash(hashSum)
+
+    // console.log('performace time:', performance.now() - p1)
     return hashSum
 }
 

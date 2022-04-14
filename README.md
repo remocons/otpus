@@ -103,11 +103,21 @@ const {encryptMessage, decryptMessage, xotp } = require("otpus")
 
 ### encryptMessage()
 ```js
-encryptMessage( data: String , key: String ) : String
+encryptMessage( data: String , key: String , nPower: Number = 15 ) : String
 ```
-General purpose simple text message encryption. 
-- data: Any UTF8 string 
-- key: Any UTF8 string. (any size)
+General purpose text message encryption. 
+- data: Any UTF8 string. 
+- key: Any UTF8 string.
+    - `please use long passPhrase.`
+- nPower:   
+    - factor for recursive hash sum counter
+    - counter = 2 ** nPower 
+    - counter is the result of exponentiation with number two as the base and integer nPower as the exponent.
+    - default value is 15. ( 2 ** 15 => 32768 times)
+    - `You can use high number for strong encryption`( but it takes more cpu time. )
+    - example( on my device) 
+      - mobile: 15 => spent about one second. 
+      - desktop: 17 => spent about one second.
 - output: encrytped and encoded base64 string.
 
 ### decryptMessage()
@@ -197,10 +207,10 @@ This function is base cipher algorithm for otpus.( using XOR and Pseudo OTP.)  Y
 
 ```js
 
-xotp( data: Uint8Array, otpKey32Bytes: Uint8Array, otpSartIndex = 0:Number, shareDataBuffer = false : boolean) : Uint8Array
+xotp( data: Uint8Array, otpKey32Bytes: Uint8Array, otpSartIndex: Number = 0, shareDataBuffer: boolean = false ) : Uint8Array
 
 ```
-- used for encryption and decryption both.
+- Using encryption and decryption both.
 - data: Uint8Array only.
 - key: 32bytes Uint8Array only. 
 - otpStartIndex: Number( 0 ~ 2**32-1.) default. 0
@@ -222,7 +232,6 @@ let otpKey = sha256.hash( pwStr)
 let data = MBP.U8( msgStr )  
 // MBP.U8(): parse any type of data into Uint8Array 
 
-
 // use case 1. shareDataBuffer is false. 
 let enc = xotp( data ,otpKey, 0 )  // false default.
 let dec = xotp( enc , otpKey, 0 ) 
@@ -240,7 +249,6 @@ xotp( data , otpKey, 0, true)
 xotp( data , otpKey, 0 , true)
 // now data is decrypted.
 
-
 ```
 
 ## Async functions using WebCrypto API
@@ -254,7 +262,7 @@ otpus's general purpose encryption implement using Web Crypto API.
 
  features:
 - any type of data.
-- any type of key( passPhrase). `You should use long passphrase or buffer`
+- any type of key( passPhrase). `string passphrase or buffer`
 - result of decryption data will be same data type of origin data.
 - randomize data size. (to hide real message size)
 - Using WebCrypto API
@@ -265,14 +273,14 @@ otpus's general purpose encryption implement using Web Crypto API.
 - data packaging:  MBP(meta-buffer-pack) 
   
 ```js
-  encrypt( data: any , passPhrase: any ,iterations: Number = 10000 ) bufferPack: Promise
+  encrypt( data: any , passPhrase: any ,iterations : Number = 32768 ) bufferPack: Promise
 ```
  - async version of otpus.encrytMessage() 
     - available: promise chaining, async await.
  - input
     - data {Stinrg | Uint8Array | Number | Object } 
     - passPhrase {Stinrg | Uint8Array | Number | Object } 
-    - iterations {Number} iterations default 10000. for PBKDF2
+    - iterations {Number} iterations for PBKDF2 ( default 32768.) 
  - returns 
     - Promise ( will return bufferPack when fulfilled )  
     - bufferPack is Node.js Buffer( subclass of Uint8Array)

@@ -62,14 +62,14 @@ describe('encryptMessage', function () {
   })
 })
 
-function prn (tag, v) {
+function prn(tag, v) {
   console.log(tag, v)
 }
-function prnObj (tag, v) {
+function prnObj(tag, v) {
   v = JSON.stringify(v, null, 2)
   console.log(tag, v)
 }
 
-function hex (title, data) {
+function hex(title, data) {
   console.log(title, MBP.hex(data))
 }
