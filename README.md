@@ -405,10 +405,10 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 ```
 
 
-
 ### Examples
 - NodeJs: please check test, testing directory.
 - Browser: example directory.
+
 ### Online demo 
 - [https://make-robot.github.io/otpus/example/]( https://make-robot.github.io/otpus/example/)
 
