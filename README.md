@@ -1,9 +1,9 @@
-# otpus
+# OTPUS
 
 Cipher and tools for Node and Browser.  
-암호 구현 및 지원 도구
+( 암호 구현 및 개발 지원 툴)
 
-## features
+## Features
 
 - Ready to development using Web Crypto API.
     - Isomorphic Web Crypto Name Reference(Node and Browser)
@@ -15,24 +15,25 @@ Cipher and tools for Node and Browser.
     - `random data size`
     - secret buffer pack ( meta buffer pack )
     - decrypt() : return `origin data type`.( thanks to the special feature of MBP)
-- pure otpus 
+- pure otpus implements
     - xotp() 
         - cipher function. based XOR and Pseudo OTP.
     - encryptMessage() 
-        - simple but strong enough text message encryption.(`!!!use stong passphrase`)
+        - simple but strong enough text message encryption.( `Use stong passphrase`)
         - recersive hash sum with salt.(like PBKDF2)
             - default. 1024 times accumulate hash sum.
         - `random data size`.(hide real message size.)
         - HMAC support. (detect corrupted message.)
-        - output base64 string.  
+        - output: base64 string.(simple handy universal data format)  
     - decryptMessage()
         - receive base64 encoded message.
         - return plain text.
         - return undefined. ( for corrupted message)
-- include:
-    - SHA256() HMAC()  ( sync type )
-    - base64() 
-    - [`meta buffer pack`]( https://github.com/make-robot/meta-buffer-pack) : buffer packer.
+- include essential tools:
+    - otpus.sha256 : [fast-sha256](https://github.com/dchest/fast-sha256-js) : sync type hash, hmac.  
+    - otpus.base64js : [base64js](https://github.com/beatgammit/base64-js) : transcoder( buffer <-> UTF8 string ) 
+    - otpus.MBP : [`meta buffer pack`]( https://github.com/make-robot/meta-buffer-pack) : buffer packer 
+    - otpus.Buffer : [buffer](https://github.com/feross/buffer) : Node.js Buffer for browser. 
 
 
 
@@ -40,32 +41,33 @@ Cipher and tools for Node and Browser.
 ## Table of Contents
 
 - [otpus](#otpus)
-  - [features](#features)
-  - [Table of Contents](#table-of-contents)
-  - [Support](#support)
-  - [Usage](#usage)
-    - [Installing](#installing)
-    - [Loading module](#loading-module)
-    - [Sync functions](#sync-functions)
-    - [encryptMessage()](#encryptmessage)
-    - [decryptMessage()](#decryptmessage)
-    - [Encoded data](#encoded-data)
-    - [decryptMessage()](#decryptmessage-1)
-    - [corruption check](#corruption-check)
-    - [xotp()](#xotp)
-  - [Async functions using WebCrypto API](#async-functions-using-webcrypto-api)
-    - [encrypt()](#encrypt)
-    - [decrypt()](#decrypt)
-    - [Error catch](#error-catch)
-    - [Handling buffer](#handling-buffer)
-    - [Examples](#examples)
-    - [License](#license)
+- [Features](#features)
+- [Table of Contents](#table-of-contents)
+- [Support](#support)
+- [Usage](#usage)
+  - [Installing](#installing)
+  - [Loading module](#loading-module)
+- [Sync functions](#sync-functions)
+  - [encryptMessage()](#encryptmessage)
+  - [decryptMessage()](#decryptmessage)
+  - [Encoded data](#encoded-data)
+  - [decryptMessage()](#decryptmessage-1)
+  - [corruption check](#corruption-check)
+  - [xotp()](#xotp)
+- [Async functions using WebCrypto API](#async-functions-using-webcrypto-api)
+  - [encrypt()](#encrypt)
+  - [decrypt()](#decrypt)
+  - [Error catch](#error-catch)
+  - [Handling buffer](#handling-buffer)
+- [Examples](#examples)
+- [Online demo](#online-demo)
+- [License](#license)
 
 
 ## Support
 You can use modern ESM style or Legacy CJS, IIFE style both.
 - NodeJS: 
-    - ESM: dist/otpus.mjs (bundled version.)
+    - ESM: src/index.js , dist/otpus.mjs (bundled version.)
     - CommonJS: dist/otpus.cjs
 - Browser:
     - ESM: dist/otpus.esm.js
@@ -75,9 +77,8 @@ You can use modern ESM style or Legacy CJS, IIFE style both.
 
 ### Installing
 
-```js
+```
 npm i otpus
-
 ```
 
 ### Loading module
@@ -98,7 +99,7 @@ const {encryptMessage, decryptMessage, xotp } = require("otpus")
 
 ```
 
-### Sync functions
+## Sync functions
 
 ### encryptMessage()
 ```js
@@ -140,12 +141,10 @@ sX7SStdL/pF7umBBEJ7EKXuv7QYLflCe3vy9F+XEayQVfAVa3PoZ1UasXl
 ... SxbIm5Qb3dlciIsIjgiLDE0OF1dAE8=
 */
 
-
 // if you need buffer data.
 const encBuffer = Buffer.from( encPack , 'base64' )
 // or reverse transformation ( from buffer to base64) also avaiable. 
 const base64Pack = encBuffer.toString('base64')
-
 
 let decMsg = decryptMessage(encPack ,keyStr )
 
@@ -191,7 +190,6 @@ function messageModification( dataOrg ){
 }
 
 ```
-
 
 ### xotp()
 
@@ -247,8 +245,8 @@ xotp( data , otpKey, 0 , true)
 
 ## Async functions using WebCrypto API
 
-**Secure context**: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers.  
-**Node.js**: The Web Cryptography API implementation has landed as an experimental feature in Node.js 15.0.0.( current status: Stability: 1 - Experimental.)
+**Secure context**: This feature is available only in secure contexts (HTTPS), in some or all supporting browsers. [MDN SubtleCrypto](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto)  
+**Node.js**: The Web Cryptography API implementation has landed as an experimental feature in Node.js 15.0.0.( current status: Stability: 1 - Experimental.) [Implementing the Web Cryptography API for Node.js Core](https://www.nearform.com/blog/implementing-the-web-cryptography-api-for-node-js-core/)
 
 ### encrypt()
 
@@ -256,7 +254,7 @@ otpus's general purpose encryption implement using Web Crypto API.
 
  features:
 - any type of data.
-- any type of key( passPhrase).
+- any type of key( passPhrase). `You should use long passphrase or buffer`
 - result of decryption data will be same data type of origin data.
 - randomize data size. (to hide real message size)
 - Using WebCrypto API
@@ -286,12 +284,12 @@ otpus's general purpose encryption implement using Web Crypto API.
 ```js
   decrypt(data:Uint8Array , passPhrase: any  ) decodeData: Promise 
 ```
+
  - input
     - bufferPack(MBP pack) {Uint8Array} 
     - passPhrase  {String | Uint8Array | any } 
  - returns 
     - Promise ( will return decodedData when fulfilled )
-
 
 ```js
 import { encrypt, decrypt ,Buffer } from "otpus"
@@ -337,7 +335,7 @@ encrypt(binaryData, key)
     return decrypt(secretPack, key)
   })
   .then(data => {
-    console.log('instanceof ArrayBuffer:', data instanceof Uint8Array )  //true
+    console.log('instanceof Uint8Array:', data instanceof Uint8Array )  //true
     console.log('decoded binary data: ', data)
   })
 
@@ -369,7 +367,8 @@ encrypt('plain text','key')
 
 ### Handling buffer
 
-result of encrypt() data is an buffer( meta-buffer-pack). 
+encrypt() function generate a buffer( meta-buffer-pack).
+You can transform data format.
 
 ```js
 
@@ -378,10 +377,9 @@ import{ encrypt, decrypt, MBP } from 'otpus'
 const secretPack = await encrypt('data','key')
 
 // secretPack is Buffer ( subclass of Uint8Array)
-console.log( secretPack instanceof Uint8Array ) 
-//  true 
+console.log( secretPack instanceof Uint8Array ) //  true 
 
-// If you need base64 string data. 
+// case. If you need base64 string data. 
 const base64Pack = secretPack.toString('base64')
 console.log( 'base64 data:', base64Pack ) 
 
@@ -401,10 +399,11 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 
 
 ### Examples
-- NodeJs: inside test, testing directory.
+- NodeJs: please check test, testing directory.
 - Browser: example directory.
-- [Online demo @github]( https://make-robot.github.io/otpus/example/)
+### Online demo 
+- [https://make-robot.github.io/otpus/example/]( https://make-robot.github.io/otpus/example/)
 
 
 ### License
-[MIT](LICENSE)  이동은 ( Lee Dong Eun ) sixgen@gmail.com 
+- [MIT](LICENSE)  이동은 ( Lee Dong Eun ) sixgen@gmail.com 
