@@ -36,10 +36,10 @@
   },
   "homepage": "https://github.com/make-robot/otpus#readme",
   "author": {
-    "name": "Lee Dong Eun",
+    "name": "Lee Dong Eun ( 이 동 은 )",
     "email": "sixgen@gmail.com"
   },
-  "license": "MIT",
+  "license": "ISC",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.1.0",
