@@ -413,5 +413,5 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 - [https://make-robot.github.io/otpus/example/]( https://make-robot.github.io/otpus/example/)
 
 
-### License
-- [MIT](LICENSE)  이동은 ( Lee Dong Eun ) sixgen@gmail.com 
+### license
+[ISC](LICENSE) 이 동 은 Lee Dong Eun <sixgen@gmail.com>
