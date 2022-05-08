@@ -409,9 +409,6 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 - NodeJs: please check test, testing directory.
 - Browser: example directory.
 
-### Online demo 
-- [https://make-robot.github.io/otpus/example/]( https://make-robot.github.io/otpus/example/)
-
 
 ### license
 [ISC](LICENSE) 이 동 은 Lee Dong Eun <sixgen@gmail.com>
