@@ -17,10 +17,6 @@
     "dev": "rollup -c -w",
     "test": "mocha"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/make-robot/otpus.git"
-  },
   "keywords": [
     "암호",
     "crypto",
@@ -31,12 +27,13 @@
     "HMAC",
     "random"
   ],
-  "bugs": {
-    "url": "https://github.com/make-robot/otpus/issues"
+  "homepage": "https://github.com/congtrol/otpus#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/congtrol/otpus.git"
   },
-  "homepage": "https://github.com/make-robot/otpus#readme",
   "author": {
-    "name": "Lee Dong Eun",
+    "name": "Dongeun Lee",
     "email": "sixgen@gmail.com"
   },
   "license": "ISC",
@@ -50,6 +47,6 @@
   },
   "dependencies": {
     "base64-js": "^1.5.1",
-    "meta-buffer-pack": "^0.2.0"
+    "meta-buffer-pack": "^1.0.1"
   }
 }
