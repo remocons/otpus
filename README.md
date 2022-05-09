@@ -1,7 +1,7 @@
 # OTPUS
 
 Cipher and tools for Node and Browser.  
-( 암호 구현 및 개발 지원 툴)
+( 범용 암호 구현 및 환경)
 
 ## Features
 
@@ -410,5 +410,8 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 - Browser: example directory.
 
 
+### Online demo 
+- [https://congtrol.github.io/otpus/example/]( https://congtrol.github.io/otpus/example/)
+
 ### license
-[ISC](LICENSE) 이 동 은 Lee Dong Eun <sixgen@gmail.com>
+[ISC](LICENSE) Donegeun Lee 이동은 <sixgen@gmail.com>
