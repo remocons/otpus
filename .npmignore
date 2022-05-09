@@ -1,3 +1,5 @@
 docs/
 *.tgz
 .vscode/
+pubGithubPageDocs.sh
+
