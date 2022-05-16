@@ -30,7 +30,7 @@
  */
     let msg = 'this is top secret message';
     let key = 'this is a secret key';
-    let encoded = otpus.encryptMessage( msg, key );
+    let encoded = otpus.encryptMessage( msg, key , 10); // 2 ** 10 => 1024 times
 
     prn('base64-encoded', encoded)
 

@@ -21,7 +21,6 @@ Cipher and tools for Node and Browser.
     - encryptMessage() 
         - simple but strong enough text message encryption.( `Use stong passphrase`)
         - recersive hash sum with salt.(like PBKDF2)
-            - default. 1024 times accumulate hash sum.
         - `random data size`.(hide real message size.)
         - HMAC support. (detect corrupted message.)
         - output: base64 string.(simple handy universal data format)  
@@ -81,23 +80,42 @@ You can use modern ESM style or Legacy CJS, IIFE style both.
 npm i otpus
 ```
 
-### Loading module
+### Browser 
 
-```js
-// browser IIFE in html
+- IIFE: Use script tag in html
+- the otpus.min.js file is inside dist folder.
+
+```html
 <script src="../dist/otpus.min.js"></script>
+```
+- You can use global CDN url. [ jsDeliver ](https://www.jsdelivr.com/package/npm/otpus) 
 
-// browser ESM.  don't forget the fullpath and file extension.
+```html
+<script src="https://cdn.jsdelivr.net/npm/otpus@0.3.0/dist/otpus.min.js"></script>
+
+```
+- ES Module.
+```js
+
+// don't forget the fullpath and file extension.
 import {encryptMessage, decryptMessage, xotp } from "../path/otpus.esm.js"
 
-// NodeJS ESM
+```
+
+### Node.js 
+
+
+```js
+
+// Node ESM
 import {encryptMessage, decryptMessage, xotp } from "otpus"
 
-// NodeJS CJS
+// Node CJS
 // tip. if your pacakage.json using "module" type, you should use *.cjs file extension.
 const {encryptMessage, decryptMessage, xotp } = require("otpus")
 
 ```
+
 
 ## Sync functions
 
@@ -414,4 +432,4 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 - [https://congtrol.github.io/otpus/example/]( https://congtrol.github.io/otpus/example/)
 
 ### license
-[ISC](LICENSE) Donegeun Lee 이동은 <sixgen@gmail.com>
+[MIT](LICENSE) Donegeun Lee 이동은 <sixgen@gmail.com>

@@ -1,12 +1,12 @@
 {
   "name": "otpus",
   "version": "0.2.5",
-  "description": "Cipher for Node & browser",
+  "description": "General purpose cipher for Node & browser",
   "main": "src/index.js",
   "cjs": "dist/otpus.cjs",
   "esm": "dist/otpus.mjs",
-  "browser": "dist/otpus.esm.js",
-  "browseriife": "dist/otpus.min.js",
+  "browser": "dist/otpus.min.js",
+  "browser_esm": "dist/otpus.esm.js",
   "type": "module",
   "exports": {
     "import": "./src/index.js",
@@ -36,7 +36,7 @@
     "name": "Dongeun Lee",
     "email": "sixgen@gmail.com"
   },
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.1.0",
@@ -47,6 +47,6 @@
   },
   "dependencies": {
     "base64-js": "^1.5.1",
-    "meta-buffer-pack": "^1.1.0"
+    "meta-buffer-pack": "^1.1.2"
   }
 }
