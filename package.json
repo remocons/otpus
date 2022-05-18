@@ -47,6 +47,6 @@
   },
   "dependencies": {
     "base64-js": "^1.5.1",
-    "meta-buffer-pack": "^1.1.2"
+    "meta-buffer-pack": "^1.1.4"
   }
 }
