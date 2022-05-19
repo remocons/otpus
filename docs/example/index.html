@@ -47,6 +47,8 @@ const MBP = otpus.MBP
 const encrypt = otpus.encrypt 
 const decrypt = otpus.decrypt 
 
+console.log( 'MBP.MB', MBP.MB('bf',32,0 ))
+
 // case1. string data 
 const strData = 'hello world'
 encrypt(strData, key)
