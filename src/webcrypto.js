@@ -127,8 +127,6 @@ export async function decrypt(encPack, passPhrase) {
     );
 
     const innerPack = MBP.unpack(randomSizeDataPack)
-
-
     return innerPack.realData
 }
 

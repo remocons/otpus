@@ -1,13 +1,11 @@
 import { sha256, base64js, MBP, Buffer, webCrypto, webCryptoTest, printHashPerformance, getHashSpeed } from './otpus-util.js'
 export { sha256, base64js, MBP, Buffer, webCrypto, webCryptoTest, printHashPerformance }
 
-const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
 export function RAND(size) {
     return webCrypto.getRandomValues(Buffer.alloc(size))
 }
-
 
 
 /**
@@ -67,7 +65,7 @@ export function xotp(data, otpKey32Bytes, otpStartIndex = 0, shareDataBuffer = f
  *
  * @param {String} msg plainText
  * @param {String} key passPhrase
- * @param {Number} nPower keyAging factor for nTimesHash().  default 10 => 2 ** 15 => repeat hash 32768 times.
+ * @param {Number} nPower keyAging factor for nTimesHash().  ex. when 10 => 2 ** 15 => repeat hash 32768 + 1 times.
  * @returns
  */
 export function encryptMessage(msg, key, nPower = 15) {
@@ -87,7 +85,6 @@ export function encryptMessage(msg, key, nPower = 15) {
     )
 
     const hmac = sha256.hmac(mainKey, randomSizeMessage)
-
     const encMsg = xotp(randomSizeMessage, mainKey)
 
     const pack = MBP.pack(
@@ -104,7 +101,6 @@ export function encryptMessage(msg, key, nPower = 15) {
 // return undefined if fail.
 export function decryptMessage(b64msg, key) {
     const msgObj = MBP.unpack(Buffer.from(b64msg, 'base64'))
-    // console.log( 'msgObj', msgObj)
 
     if (msgObj.nPower > 20) {
         console.log('warning: too much nPower:' + msgObj.nPower)
@@ -119,7 +115,6 @@ export function decryptMessage(b64msg, key) {
     try {
         const pack = MBP.unpack(decMsg)
         if (typeof pack === 'object') {
-            // console.log( pack )
             if (!equal(hmac, msgObj.hmac)) return // 'Wrong HMAC: BROKEN'
             const msg = decoder.decode(pack.msg)
             return msg

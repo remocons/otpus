@@ -71,7 +71,7 @@ encrypt(binaryData, key)
     return decrypt(secretPack, key)
   })
   .then(data => {
-    prn('instanceof ArrayBuffer:', data instanceof Uint8Array )  //true
+    prn('instanceof Uint8Array:', data instanceof Uint8Array )  //true
     prn('decoded binary data: ', MBP.hex( data ))
   })
 
