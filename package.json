@@ -47,6 +47,7 @@
   },
   "dependencies": {
     "base64-js": "^1.5.1",
-    "meta-buffer-pack": "^1.1.4"
+    "meta-buffer-pack": "^1.1.4",
+    "virtual-buffer": "file:../virtual-buffer"
   }
 }

@@ -9,7 +9,7 @@ export function RAND(size) {
 }
 
 /**
- * XOR encryption ( same with decryption)
+ * 32bits unit XOR encryption ( same with decryption)
  * 1. generate OTP from SHA
  * 2. XOR data and OTP
  *
@@ -35,47 +35,86 @@ export function xotp(data, otpKey32Bytes, otpStartIndex = 0, shareDataBuffer = f
     if (typeof shareDataBuffer !== 'boolean') {
         throw new TypeError('sharedDataBuffer: Use boolean. true or false.')
     }
-    // otpKey is 36bytes
-    // 32Bytes otpKey32Bytes + 4byte Uint32 Counter( LittleEndian ). (like Uint32Array(value ) )
     const otpKey = MBP.U8pack(otpKey32Bytes, MBP.NB('32L', otpStartIndex))
-    // console.log('otpKey', MBP.hex(otpKey))
-
-    // data
+    
     data = MBP.U8(data, shareDataBuffer)
     const otpMasterKeyArr = new Uint32Array(otpKey.buffer)
-
+    
     const nBytes = data.byteLength
     const nTimes = Math.ceil(nBytes / 32) // min. 1   ; needed number of otp
     const lastTime = nTimes - 1 // min. 0
     const nRemains = nBytes % 32
     const buf32Len = Math.floor(nBytes / 4) // byteLength / 4 =>  multiple of 4.
-    // console.log(`bayoXCrypto src u8Arr .byteOffset: ${u8Arr.byteOffset} .byteLength: ${u8Arr.byteLength}  1/4 floored => buf32Len: ${buf32Len}`);
-
     const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len)
-
+    
     for (let i = 0; i < nTimes; i++) {
-        // 32바이트 단위로 원본 파일읽어서 otp 연산.
-        // 1. indexed otp 생성
         otpMasterKeyArr[8]++
-
-        const potp = sha256.hash(otpMasterKeyArr.buffer)
+        const potp = sha256.hash(otpMasterKeyArr)
         const potp32 = new Uint32Array(potp.buffer)
-
-        // console.log('potp', potp)
-        // console.log('potp32', potp32)
-        if (i === lastTime && nRemains !== 0) { // 32바이트 이하 (나머지 Byte 연산)
+        if (i === lastTime && nRemains !== 0) { 
             const potp8 = potp
-            for (let q = nBytes - nRemains, r = 0; r < nRemains; r++) { // 최대 31번
-                // console.log(`q:${q} r:${r}`);
-                data[q++] ^= potp8[r] // q;버퍼의 index   r; otp의 index
+            for (let q = nBytes - nRemains, r = 0; r < nRemains; r++) { 
+                data[q++] ^= potp8[r]
             }
-        } else { // 4Bytes 단위 8회 연산
+        } else { 
             for (let ib = 0; ib < 8; ib++) buf32[i * 8 + ib] ^= potp32[ib]
         }
     }
 
     return data
 }
+
+/**
+ * 8bits unit  XOR encryption ( same with decryption)
+ * 1. generate OTP from SHA
+ * 2. XOR data and OTP
+ *
+ * @param {Uint8Array} data
+ * @param {Uint8Array} otpKey32Bytes
+ * @param {Number} otpStartIndex
+ * @param {boolean} shareDataBuffer  true: modify origin data,  false: return new data.
+ * @returns encryptedData
+ */
+export function xotp8(data, otpKey32Bytes, otpStartIndex = 0, shareDataBuffer = false) {
+    if (!(otpKey32Bytes instanceof Uint8Array) || !(otpKey32Bytes.byteLength === 32)) {
+        throw new TypeError('xotp: Use 32 byteLength Uint8Array key.')
+    }
+
+    if (!(data instanceof Uint8Array)) {
+        throw new TypeError('xotp:  Use Uint8Array data. ')
+    }
+
+    if (typeof otpStartIndex !== 'number') {
+        throw new TypeError('otpStartIndex:  Use Number. 0 ~  2 ** 32 - 1')
+    }
+
+    if (typeof shareDataBuffer !== 'boolean') {
+        throw new TypeError('sharedDataBuffer: Use boolean. true or false.')
+    }
+
+    const otpKeyWithIndex = Buffer.concat( [ otpKey32Bytes, MBP.NB('32L', otpStartIndex) ] )
+
+    // data: copy or shareInputBuffer
+    data = MBP.U8(data, shareDataBuffer) 
+
+    let len = data.byteLength
+    let otpIndex = otpStartIndex
+    let dataOffset = 0
+    let xorCalcLen = 0
+
+    while( len > 0 ){
+        xorCalcLen = len < 32 ? len : 32
+        otpKeyWithIndex.writeUInt32LE(++otpIndex, 32 ) 
+        let iotp = sha256.hash( otpKeyWithIndex  )
+        for(let i = 0; i < xorCalcLen ; i++){
+            data[ dataOffset++ ] ^= iotp[i]
+        }
+        len -= 32
+    }
+    return data
+}
+
+
 
 /**
  * text message encryption.
@@ -156,17 +195,12 @@ export function equal(buf1, buf2) {
 /**
  * Simplified PBKDF2
  * @param {String | Uint8Array } srcData  *input: key + salt(rand) together. (support string.)
- * @param {Number} n how much repeat hash
+ * @param {Number} n how much repeat hash.  it will do n+1 times.
  * @returns hash32bytes : Uint8Array
  */
 export function nTimesHash(srcData, n) {
-    // console.log('n',n)
-    // const p1 = performance.now()
-
     let hashSum = sha256.hash(srcData)
     for (let i = 0; i < n; i++) hashSum = sha256.hash(hashSum)
-
-    // console.log('performace time:', performance.now() - p1)
     return hashSum
 }
 
