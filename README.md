@@ -91,7 +91,7 @@ npm i otpus
 - You can use global CDN url. [ jsDeliver ](https://www.jsdelivr.com/package/npm/otpus) 
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/otpus@0.3.0/dist/otpus.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/otpus@1/dist/otpus.min.js"></script>
 
 ```
 - ES Module.
