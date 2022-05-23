@@ -1,6 +1,6 @@
 {
   "name": "otpus",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "General purpose cipher for Node & browser",
   "main": "src/index.js",
   "cjs": "dist/otpus.cjs",
