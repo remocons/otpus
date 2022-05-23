@@ -8,8 +8,10 @@ export function RAND(size) {
     return webCrypto.getRandomValues(Buffer.alloc(size))
 }
 
+
+
 /**
- * 32bits unit XOR encryption ( same with decryption)
+ * 8bits version. XOR encryption ( same with decryption)
  * 1. generate OTP from SHA
  * 2. XOR data and OTP
  *
@@ -35,66 +37,10 @@ export function xotp(data, otpKey32Bytes, otpStartIndex = 0, shareDataBuffer = f
     if (typeof shareDataBuffer !== 'boolean') {
         throw new TypeError('sharedDataBuffer: Use boolean. true or false.')
     }
-    const otpKey = MBP.U8pack(otpKey32Bytes, MBP.NB('32L', otpStartIndex))
-    
-    data = MBP.U8(data, shareDataBuffer)
-    const otpMasterKeyArr = new Uint32Array(otpKey.buffer)
-    
-    const nBytes = data.byteLength
-    const nTimes = Math.ceil(nBytes / 32) // min. 1   ; needed number of otp
-    const lastTime = nTimes - 1 // min. 0
-    const nRemains = nBytes % 32
-    const buf32Len = Math.floor(nBytes / 4) // byteLength / 4 =>  multiple of 4.
-    const buf32 = new Uint32Array(data.buffer, data.byteOffset, buf32Len)
-    
-    for (let i = 0; i < nTimes; i++) {
-        otpMasterKeyArr[8]++
-        const potp = sha256.hash(otpMasterKeyArr)
-        const potp32 = new Uint32Array(potp.buffer)
-        if (i === lastTime && nRemains !== 0) { 
-            const potp8 = potp
-            for (let q = nBytes - nRemains, r = 0; r < nRemains; r++) { 
-                data[q++] ^= potp8[r]
-            }
-        } else { 
-            for (let ib = 0; ib < 8; ib++) buf32[i * 8 + ib] ^= potp32[ib]
-        }
-    }
-
-    return data
-}
-
-/**
- * 8bits unit  XOR encryption ( same with decryption)
- * 1. generate OTP from SHA
- * 2. XOR data and OTP
- *
- * @param {Uint8Array} data
- * @param {Uint8Array} otpKey32Bytes
- * @param {Number} otpStartIndex
- * @param {boolean} shareDataBuffer  true: modify origin data,  false: return new data.
- * @returns encryptedData
- */
-export function xotp8(data, otpKey32Bytes, otpStartIndex = 0, shareDataBuffer = false) {
-    if (!(otpKey32Bytes instanceof Uint8Array) || !(otpKey32Bytes.byteLength === 32)) {
-        throw new TypeError('xotp: Use 32 byteLength Uint8Array key.')
-    }
-
-    if (!(data instanceof Uint8Array)) {
-        throw new TypeError('xotp:  Use Uint8Array data. ')
-    }
-
-    if (typeof otpStartIndex !== 'number') {
-        throw new TypeError('otpStartIndex:  Use Number. 0 ~  2 ** 32 - 1')
-    }
-
-    if (typeof shareDataBuffer !== 'boolean') {
-        throw new TypeError('sharedDataBuffer: Use boolean. true or false.')
-    }
 
     const otpKeyWithIndex = Buffer.concat( [ otpKey32Bytes, MBP.NB('32L', otpStartIndex) ] )
 
-    // data: copy or shareInputBuffer
+    // data: copy or share
     data = MBP.U8(data, shareDataBuffer) 
 
     let len = data.byteLength
