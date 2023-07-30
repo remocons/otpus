@@ -1,12 +1,12 @@
 {
   "name": "otpus",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "General purpose cipher for Node & browser",
   "main": "src/index.js",
   "cjs": "dist/otpus.cjs",
   "esm": "dist/otpus.mjs",
-  "browser": "dist/otpus.min.js",
-  "browser_esm": "dist/otpus.esm.js",
+  "browser_iife": "dist/otpus.min.js",
+  "browser": "dist/otpus.esm.js",
   "type": "module",
   "exports": {
     "import": "./src/index.js",

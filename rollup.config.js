@@ -10,12 +10,12 @@ export default [
     output: [
       {
         name: 'otpus',
-        file: pkg.browser,
+        file: pkg.browser_iife,
         format: 'iife',
         sourcemap: true
       },
       {
-        file: pkg.browser_esm,
+        file: pkg.browser,
         format: 'es',
         sourcemap: true
       }
