@@ -429,7 +429,7 @@ console.log( 'salt:', sercretObject.salt ) // 16 bytes. random values.
 
 
 ### Online demo 
-- [https://congtrol.github.io/otpus/example/]( https://congtrol.github.io/otpus/example/)
+- [https://remocons.github.io/otpus/example/]( https://remocons.github.io/otpus/example/)
 
 ### license
-[MIT](LICENSE) Donegeun Lee 이동은 <sixgen@gmail.com>
+[MIT](LICENSE)
